@@ -1,4 +1,5 @@
 # PYTHON 3.13
+aiohttp==3.13.2
 azure-cosmos==4.14.2
 azure-storage-blob==12.27.1
 dotenv==0.9.9 

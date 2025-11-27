@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
         "http://localhost:5173", # idk if this is the one for nextjs or whatever you guys will use, just change it
         "http://127.0.0.1:5173",
+        # ADD VERCEL URL HERE
     ]
 
     DATABASE_URI: str | None  = os.getenv("DATABASE_URI")    
