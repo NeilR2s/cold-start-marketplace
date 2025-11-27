@@ -1,6 +1,7 @@
 import logging
-from typing import Optional
+from typing import Optional, BinaryIO
 
+import asyncio
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from azure.storage.blob import ContentSettings
 
@@ -85,25 +86,38 @@ class FileBlobClient:
             self.container_client = None
             logger.info("FileBlobClient connection closed")
 
-    async def upload_image(self, file_name: str, file_bytes: bytes, content_type: str) -> str | None:
-        """
-        Use this for storing recipts or whatever twisted shit they pull on the event day.
-        """
-        if not self.container_client: 
-            raise ValueError("FileBlobClient Client not initialized. Call initialize() first.")
-        
-        try:
-            content_settings = ContentSettings(content_type=content_type)
+    async def upload_file(self, file_name: str, file_bytes: bytes | BinaryIO, content_type: str) -> str | None:
+            if not self.container_client: 
+                raise ValueError("FileBlobClient Client not initialized. Call initialize() first.")
             
-            blob_client = await self.container_client.upload_blob(
-                name=file_name,
-                data=file_bytes,
-                content_settings=content_settings,
-                overwrite=True
-            )
+            try:
+                payload = file_bytes
+                if hasattr(file_bytes, "read"):
+                    # Check if it's an async read (FastAPI) or sync read
+                    if asyncio.iscoroutinefunction(file_bytes.read):
+                        payload = await file_bytes.read()
+                    else:
+                        payload = file_bytes.read()
+                
+                content_settings = ContentSettings(content_type=content_type)
+                blob_client = self.container_client.get_blob_client(file_name)
+                blob_url = blob_client.url
+                
+                async def _upload_worker():
+                    try:
+                        await blob_client.upload_blob(
+                            data=payload,
+                            content_settings=content_settings,
+                            overwrite=True
+                        )
+                        logger.info(f"Background upload successful: {file_name}")
+                    except Exception as e:
+                        logger.error(f"Background upload failed for {file_name}: {e}")
 
-            return blob_client.url
+                asyncio.create_task(_upload_worker())
 
-        except Exception as e:
-            logger.error(f"Failed to upload scanned image to Azure Blob Container: {e}")
-            return None
+                return blob_url
+
+            except Exception as e:
+                logger.error(f"Failed to initiate optimistic upload: {e}")
+                return None
