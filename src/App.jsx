@@ -2,31 +2,42 @@ import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction } from '@mui/material';
 import { Home, ShoppingCart, Message, AccountCircle } from '@mui/icons-material';
+import {
+  Search,
+  Package,
+  Users,
+  User,
+  Plus,
+  Globe,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 
 // Data and Custom Components
-import { Avatar, BitbitLogo, Header } from './components/CustomComponents';
-import { CURRENT_USER } from './data';
+import { Avatar, BitbitLogo, Header } from "./components/CustomComponents";
+import { CURRENT_USER } from "./data";
 
 // Import Modals
-import GroupOrderModal from './components/GroupOrderModal';
-import PostTripModal from './components/PostTripModal';
+import GroupOrderModal from "./components/GroupOrderModal";
+import PostTripModal from "./components/PostTripModal";
 
 // Import Pages
-import BrowsePage from './pages/BrowsePage';
-import OrdersPage from './pages/OrdersPage';
-import ProfilePage from './pages/ProfilePage';
+import BrowsePage from "./pages/BrowsePage";
+import OrdersPage from "./pages/OrdersPage";
+import ProfilePage from "./pages/ProfilePage";
+import MessagesPage from "./pages/MessagesPage";
 
 export default function BitbitApp() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // 'activeTab' is removed; we use location.pathname to determine the active view
-  const [mode, setMode] = useState('buyer'); // 'buyer' | 'traveler'
+  const [mode, setMode] = useState("buyer"); // 'buyer' | 'traveler'
   const [selectedGO, setSelectedGO] = useState(null);
   const [isPostTripOpen, setIsPostTripOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const showToast = (message, type = 'success') => {
+  const showToast = (message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
@@ -50,7 +61,11 @@ export default function BitbitApp() {
         <Routes>
           <Route path="/" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
           <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/profile" element={<ProfilePage user={CURRENT_USER} />} />
+          <Route
+            path="/profile"
+            element={<ProfilePage user={CURRENT_USER} />}
+          />
+          <Route path="/messages" element={<MessagesPage />} />
         </Routes>
       </main>
 
@@ -73,7 +88,7 @@ export default function BitbitApp() {
       >
         <BottomNavigationAction label="Home" value="/" icon={<Home sx={{ color: location.pathname === '/' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Pasabuys" value="/orders" icon={<ShoppingCart sx={{ color: location.pathname === '/orders' ? '#14A384' : 'inherit' }} />} />
-        <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} onClick={() => showToast("Messages feature coming soon!", "neutral")} />
+        <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Profile" value="/profile" icon={<AccountCircle sx={{ color: location.pathname === '/profile' ? '#14A384' : 'inherit' }} />} />
       </BottomNavigation>
 
