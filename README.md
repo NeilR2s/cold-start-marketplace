@@ -1,2 +1,15 @@
 # cold-start-marketplace
-boilerplate code and assets for 2025 cold start entry
+
+## stack
+Node v.22
+React
+JavaScript
+Tailwind (v4)
+
+
+## Setup
+
+```
+cd frontend
+npm install
+```

@@ -1,0 +1,22 @@
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+@layer utilities {
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+    display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    }
+}
+
+@theme {
+    --font-*: initial;
+    --font-sans: "Google Sans", "sans-serif";
+    --font-primary: "Google Sans", "sans-serif";
+    --font-secondary: "Google Sans", "sans-serif";
+}
