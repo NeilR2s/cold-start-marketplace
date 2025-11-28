@@ -25,6 +25,7 @@ ALLOWED_IMAGE_TYPES = {
 # DONT ALLOW THEM TO UPLOAD COODE OR SCRIPTS
 ALLOWED_FILE_TYPES = {
     "application/pdf": "pdf",
+    "video/mp4": "mp4"
 }
 
 async def _validate_mime_type(file: UploadFile, allowed_types: dict) -> str:

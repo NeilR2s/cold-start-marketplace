@@ -2,11 +2,13 @@ try:
     from backend.core.config import settings
     from backend.core.db.image_blob_container import ImageBlobClient
     from backend.core.db.file_blob_container import FileBlobClient
+    from backend.core.db.users_container import UsersContainer
     from backend.api.main import api_router
 except (ImportError, ModuleNotFoundError):
     from core.config import settings
     from core.db.image_blob_container import ImageBlobClient
-    from backend.core.db.file_blob_container import FileBlobClient
+    from core.db.file_blob_container import FileBlobClient
+    from core.db.users_container import UsersContainer
     from api.main import api_router
 
 from contextlib import asynccontextmanager
@@ -28,12 +30,21 @@ async def lifespan(app: FastAPI):
     app.state.file_blob_client = FileBlobClient()
     await app.state.file_blob_client.initialize()
 
+    app.state.users_container = UsersContainer()
+    await app.state.users_container.initialize()
+
+
     yield
 
     if app.state.image_blob_client:
         await app.state.image_blob_client.close()
+
     if app.state.file_blob_client:
         await app.state.file_blob_client.close()
+
+    if app.state.users_container:
+        await app.state.users_container.close()
+
 
 
 app = FastAPI(
