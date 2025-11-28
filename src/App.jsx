@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import { BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { Home, ShoppingCart, Message, AccountCircle } from '@mui/icons-material';
 
 // Data and Custom Components
 import { Avatar, BitbitLogo, Header } from "./components/CustomComponents";
@@ -41,9 +43,6 @@ export default function BitbitApp() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
-
-  // Helper to check active route for styling the nav buttons
-  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-[Figtree]">
