@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction } from '@mui/material';
-import { Home, ShoppingCart, Message, AccountCircle } from '@mui/icons-material';
+import { Home, ShoppingCart, Message, AccountCircle, TravelExplore } from '@mui/icons-material';
 import {
   Search,
   Package,
@@ -27,6 +27,7 @@ import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import WelcomePage from './pages/WelcomePage';
+import ExplorePage from './pages/ExplorePage';
 
 export default function BitbitApp() {
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ export default function BitbitApp() {
       <main className="max-w-md mx-auto">
         <Routes>
           <Route path="/home" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
+          <Route path="/explore" element={<ExplorePage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route
             path="/profile"
@@ -85,7 +87,8 @@ export default function BitbitApp() {
           },
         }}
       >
-        <BottomNavigationAction label="Home" value="/home" icon={<Home sx={{ color: location.pathname === '/' ? '#14A384' : 'inherit' }} />} />
+        <BottomNavigationAction label="Home" value="/home" icon={<Home sx={{ color: location.pathname === '/home' ? '#14A384' : 'inherit' }} />} />
+        <BottomNavigationAction label="Explore" value="/explore" icon={<TravelExplore sx={{ color: location.pathname === '/' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Pasabuys" value="/orders" icon={<ShoppingCart sx={{ color: location.pathname === '/orders' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Profile" value="/profile" icon={<AccountCircle sx={{ color: location.pathname === '/profile' ? '#14A384' : 'inherit' }} />} />

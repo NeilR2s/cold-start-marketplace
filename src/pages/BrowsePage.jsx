@@ -7,7 +7,27 @@ import { TextField, InputAdornment, IconButton, Box, Drawer, Typography } from '
 import SearchIcon from '@mui/icons-material/Search';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
-// --- MOCK DATA (New Source of Truth) ---
+const MOCK_TRIPS = [
+  {
+    id: 1,
+    traveler: { name: "Miguel R.", verified: true, image: "https://i.pravatar.cc/150?u=8" },
+    origin: "Tokyo, JP",
+    destination: "Manila, PH",
+    date: "Mar 15",
+    capacity: { available: 5, pricePerKg: 850 },
+    shops: ["Don Quijote", "Nintendo Store", "Disney Store"]
+  },
+  {
+    id: 2,
+    traveler: { name: "Angela K.", verified: true, image: "https://i.pravatar.cc/150?u=9" },
+    origin: "Seoul, KR",
+    destination: "Cebu, PH",
+    date: "Mar 18",
+    capacity: { available: 12, pricePerKg: 600 },
+    shops: ["Olive Young", "Gentle Monster", "K-Pop Merch"]
+  }
+];
+
 const MOCK_PRODUCTS = [
   {
     id: 1,
@@ -341,13 +361,98 @@ const BrowsePage = () => {
                 </div>
               )}
             </div>
+            {/* --- TRAVELER FEED SECTION --- */}
+            <section className="mt-8 pt-6 border-t border-slate-200">
+              <div className="flex justify-between items-center mb-4 px-1">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Upcoming Travelers</h2>
+                  <p className="text-xs text-slate-500">Request items from verified travelers</p>
+                </div>
+                <button className="text-xs text-emerald-600 font-bold hover:underline">See All</button>
+              </div>
+              <div className="space-y-4">
+                {MOCK_TRIPS.map(trip => (
+                  <div key={trip.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-300 transition-all">
+                    <div className="flex justify-between items-start">
+                      <div className="flex gap-3">
+                        <Avatar src={trip.traveler.image} name={trip.traveler.name} />
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <h4 className="text-sm font-bold text-slate-900">{trip.traveler.name}</h4>
+                            {trip.traveler.verified && <span className="text-[10px] bg-blue-100 text-blue-600 px-1 rounded font-bold">✓</span>}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 font-medium">
+                            <span className="font-semibold text-slate-700">{trip.origin}</span>
+                            <Plane size={10} className="text-slate-400 rotate-90" />
+                            <span className="font-semibold text-slate-700">{trip.destination}</span>
+                            <span className="text-slate-300">•</span>
+                            <span>Arriving {trip.date}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-emerald-600">{trip.capacity.available}kg Left</div>
+                        <div className="text-[10px] text-slate-400 font-medium">{formatPHP(trip.capacity.pricePerKg)}/kg</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                      {trip.shops.map(shop => (
+                        <span key={shop} className="whitespace-nowrap px-2.5 py-1 bg-slate-50 rounded-md text-[10px] font-semibold text-slate-600 border border-slate-100">
+                          {shop}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </>
         ) : (
           /* --- TRAVELER PLACEHOLDER (No changes requested here) --- */
-          <div className="py-10 text-center text-slate-400">
-             <Plane size={48} className="mx-auto mb-4 opacity-20" />
-             <p className="text-sm">Traveler dashboard is under construction.</p>
-          </div>
+            <section className="mt-8 pt-6 border-t border-slate-200">
+              <div className="flex justify-between items-center mb-4 px-1">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Upcoming Travelers</h2>
+                  <p className="text-xs text-slate-500">Request items from verified travelers</p>
+                </div>
+                <button className="text-xs text-emerald-600 font-bold hover:underline">See All</button>
+              </div>
+              <div className="space-y-4">
+                {MOCK_TRIPS.map(trip => (
+                  <div key={trip.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-300 transition-all">
+                    <div className="flex justify-between items-start">
+                      <div className="flex gap-3">
+                        <Avatar src={trip.traveler.image} name={trip.traveler.name} />
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <h4 className="text-sm font-bold text-slate-900">{trip.traveler.name}</h4>
+                            {trip.traveler.verified && <span className="text-[10px] bg-blue-100 text-blue-600 px-1 rounded font-bold">✓</span>}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 font-medium">
+                            <span className="font-semibold text-slate-700">{trip.origin}</span>
+                            <Plane size={10} className="text-slate-400 rotate-90" />
+                            <span className="font-semibold text-slate-700">{trip.destination}</span>
+                            <span className="text-slate-300">•</span>
+                            <span>Arriving {trip.date}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-emerald-600">{trip.capacity.available}kg Left</div>
+                        <div className="text-[10px] text-slate-400 font-medium">{formatPHP(trip.capacity.pricePerKg)}/kg</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                      {trip.shops.map(shop => (
+                        <span key={shop} className="whitespace-nowrap px-2.5 py-1 bg-slate-50 rounded-md text-[10px] font-semibold text-slate-600 border border-slate-100">
+                          {shop}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
         )}
       </div>
     </div>
