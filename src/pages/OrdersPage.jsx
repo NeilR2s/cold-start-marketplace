@@ -9,7 +9,7 @@ const USERS = {
     id: CURRENT_USER.uid,
     name: CURRENT_USER.displayName,
     avatar: CURRENT_USER.avatar,
-  }, 
+  },
   sarah: {
     id: 'u201',
     name: 'Sarah J.',
@@ -221,14 +221,14 @@ const OrdersPage = () => {
         )}
 
         <div className="bg-slate-100 p-1 rounded-xl flex relative">
-          <button 
+          <button
             onClick={() => setTravelerTab('ongoing')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 ${travelerTab === 'ongoing' && !isSearching ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             disabled={isSearching}
           >
             Ongoing Orders ({MOCK_TRANSACTIONS.filter(t => t.status === 'ongoing').length})
           </button>
-          <button 
+          <button
             onClick={() => setTravelerTab('past')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 ${travelerTab === 'past' && !isSearching ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             disabled={isSearching}
@@ -247,7 +247,7 @@ const OrdersPage = () => {
           {filteredTransactions.length === 0 ? (
             <div className="py-12 text-center">
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Package size={24} className="text-slate-300"/>
+                <Package size={24} className="text-slate-300" />
               </div>
               <p className="text-slate-400 text-sm">
                 {isSearching ? 'No matches found.' : `No ${travelerTab} transactions found.`}
@@ -264,7 +264,7 @@ const OrdersPage = () => {
                 <CustomCard key={tx.id} className="p-0 overflow-hidden group">
                   <div className={`px-4 py-2 flex justify-between items-center text-[10px] font-bold uppercase tracking-wide ${tx.status === 'ongoing' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
                     <span className="flex items-center gap-1.5">
-                      {tx.status === 'ongoing' ? <Clock size={12}/> : <CheckCircle size={12}/>}
+                      {tx.status === 'ongoing' ? <Clock size={12} /> : <CheckCircle size={12} />}
                       {tx.step}
                     </span>
                     <span>ID: {tx.id.toUpperCase()}</span>
@@ -277,30 +277,54 @@ const OrdersPage = () => {
                       </div>
 
                       <div className="flex-1 min-w-0">
+                        {/* TOP SECTION: Header vs Button */}
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-sm font-bold text-slate-900 truncate pr-2">{tx.product.title}</h3>
-                            <p className="text-xs text-slate-500 truncate">{tx.product.location}</p>
+                          {/* 1. Add 'flex-1 min-w-0' here so the text container can shrink */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-bold text-slate-900 truncate pr-2">
+                              {tx.product.title}
+                            </h3>
+                            <p className="text-xs text-slate-500 truncate">
+                              {tx.product.location}
+                            </p>
                           </div>
-                          <button className="text-slate-300 hover:text-slate-600">
+
+                          {/* Button needs 'flex-shrink-0' so it doesn't get squished */}
+                          <button className="text-slate-300 hover:text-slate-600 flex-shrink-0 ml-2">
                             <MoreHorizontal size={16} />
                           </button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 mt-4">
+                          {/* HOST SECTION (Left) */}
+                          {/* 2. Removed 'truncate' from this parent flex container */}
                           <div className="flex items-center gap-2">
-                            <Avatar name={tx.host.name} src={tx.host.avatar} size="xs" />
-                            <div>
+                            {/* Avatar needs shrink-0 so it doesn't oval when text is long */}
+                            <div className="flex-shrink-0">
+                              <Avatar name={tx.host.name} src={tx.host.avatar} size="xs" />
+                            </div>
+
+                            {/* 3. Add 'min-w-0' to the text wrapper */}
+                            <div className="min-w-0">
                               <p className="text-[10px] text-slate-400 font-medium">Host</p>
-                              <p className="text-xs font-semibold text-slate-800 truncate">{tx.host.name}</p>
+                              <p className="text-xs font-semibold text-slate-800 truncate">
+                                {tx.host.name}
+                              </p>
                             </div>
                           </div>
+
+                          {/* SWAPPER SECTION (Right) */}
                           <div className="flex items-center gap-2 justify-end text-right">
-                            <div>
+                            {/* 4. Add 'min-w-0' to the text wrapper */}
+                            <div className="min-w-0">
                               <p className="text-[10px] text-slate-400 font-medium">Swapper</p>
-                              <p className="text-xs font-semibold text-slate-800 truncate">{tx.swapper.name}</p>
+                              <p className="text-xs font-semibold text-slate-800 truncate">
+                                {tx.swapper.name}
+                              </p>
                             </div>
-                            <Avatar name={tx.swapper.name} src={tx.swapper.avatar} size="xs" />
+                            <div className="flex-shrink-0">
+                              <Avatar name={tx.swapper.name} src={tx.swapper.avatar} size="xs" />
+                            </div>
                           </div>
                         </div>
 
@@ -328,13 +352,12 @@ const OrdersPage = () => {
                   {tx.status === 'ongoing' ? (
                     <div className="px-4 py-3 border-t border-slate-100 flex gap-2">
                       <button
-                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${
-                          isHost
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${isHost
                             ? 'bg-slate-900 text-white hover:bg-slate-800'
                             : isSwapper
                               ? 'bg-white border border-slate-300 text-slate-900 hover:bg-slate-50'
                               : 'bg-white text-slate-500 border border-transparent'
-                        }`}
+                          }`}
                       >
                         {isHost ? 'Update Status' : isSwapper ? 'View Status' : 'View Details'}
                       </button>
