@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Package, Clock, CheckCircle, MoreHorizontal } from 'lucide-react';
+import { Search, Package, Clock, CheckCircle, MoreHorizontal, Star, X } from 'lucide-react';
 import { Card as CustomCard, Avatar } from '@/components/CustomComponents';
 import { CURRENT_USER } from '@/data';
 
@@ -105,6 +105,10 @@ const OrdersPage = () => {
   const [travelerTab, setTravelerTab] = useState('ongoing');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [ratingModalTx, setRatingModalTx] = useState(null);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingComment, setRatingComment] = useState('');
+  const [savedRatings, setSavedRatings] = useState({});
 
   const fromHostTrip = location.state?.from === 'hostTrip';
 
@@ -127,6 +131,36 @@ const OrdersPage = () => {
   }, [travelerTab, searchQuery]);
 
   const isSearching = searchQuery.trim().length > 0;
+
+  const handleOpenRating = (tx) => {
+    const existing = savedRatings[tx.id];
+    setRatingModalTx(tx);
+    setRatingValue(existing?.value || 0);
+    setRatingComment(existing?.comment || '');
+  };
+
+  const handleSubmitRating = () => {
+    if (!ratingModalTx || ratingValue === 0) return;
+
+    setSavedRatings((prev) => ({
+      ...prev,
+      [ratingModalTx.id]: {
+        value: ratingValue,
+        comment: ratingComment,
+        createdAt: new Date().toISOString(),
+      },
+    }));
+
+    setRatingModalTx(null);
+    setRatingValue(0);
+    setRatingComment('');
+  };
+
+  const handleCloseRating = () => {
+    setRatingModalTx(null);
+    setRatingValue(0);
+    setRatingComment('');
+  };
 
   return (
     <div className="px-4 py-6 space-y-6 pb-28">
@@ -223,6 +257,8 @@ const OrdersPage = () => {
             filteredTransactions.map((tx) => {
               const isHost = tx.host.id === CURRENT_USER.uid;
               const isSwapper = tx.swapper.id === CURRENT_USER.uid;
+              const existingRating = savedRatings[tx.id];
+              const counterpartyName = isHost ? tx.swapper.name : tx.host.name;
 
               return (
                 <CustomCard key={tx.id} className="p-0 overflow-hidden group">
@@ -291,6 +327,24 @@ const OrdersPage = () => {
                             </div>
                           </div>
                         </div>
+
+                        {tx.status === 'past' && existingRating && (
+                          <div className="mt-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-800">
+                              <Star size={12} className="fill-amber-400 text-amber-400" />
+                              <span>
+                                You rated <span className="font-semibold">{counterpartyName}</span> {existingRating.value}/5
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              className="text-[10px] font-bold text-emerald-700 hover:underline"
+                              onClick={() => handleOpenRating(tx)}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -332,8 +386,15 @@ const OrdersPage = () => {
                       >
                         Chat
                       </button>
-                      <button className="flex-1 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors">
-                        Rate
+                      <button
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-colors ${
+                          existingRating
+                            ? 'bg-emerald-600 text-white border-emerald-600 cursor-pointer hover:bg-emerald-700'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
+                        }`}
+                        onClick={() => handleOpenRating(tx)}
+                      >
+                        {existingRating ? 'Update Rating' : 'Rate'}
                       </button>
                     </div>
                   )}
@@ -343,6 +404,92 @@ const OrdersPage = () => {
           )}
         </div>
       </div>
+
+      {ratingModalTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={handleCloseRating}
+          />
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900">Rate your pasabuy</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  How was your swap experience with{' '}
+                  <span className="font-semibold">
+                    {ratingModalTx.host.id === CURRENT_USER.uid ? ratingModalTx.swapper.name : ratingModalTx.host.name}
+                  </span>
+                  ?
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseRating}
+                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-2 py-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRatingValue(star)}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      size={28}
+                      className={
+                        star <= ratingValue
+                          ? 'text-amber-400 fill-amber-400 drop-shadow-sm'
+                          : 'text-slate-200'
+                      }
+                    />
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-slate-500 text-center">
+                {ratingValue === 0 && 'Tap a star to rate your experience.'}
+                {ratingValue === 5 && 'Amazing! This really helps build trust in the community.'}
+                {ratingValue === 4 && 'Great swap. Thanks for sharing the love.'}
+                {ratingValue === 3 && 'Okay experience. Your feedback keeps things fair.'}
+                {ratingValue === 2 && 'Not ideal. Let us know what could be better.'}
+                {ratingValue === 1 && 'Sorry this wasn’t great. Your honesty helps keep pasabuy safe.'}
+              </p>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-500 ml-1">
+                  Optional note
+                </label>
+                <textarea
+                  rows={3}
+                  value={ratingComment}
+                  onChange={(e) => setRatingComment(e.target.value)}
+                  placeholder="Share any details (e.g., on-time meetup, careful with items, smooth coordination)."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={ratingValue === 0}
+              onClick={handleSubmitRating}
+              className={`mt-5 w-full py-3 rounded-xl text-sm font-bold shadow-md shadow-emerald-200 flex items-center justify-center gap-2 transition-colors ${
+                ratingValue === 0
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              }`}
+            >
+              {savedRatings[ratingModalTx?.id] ? 'Update Rating' : 'Submit Rating'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

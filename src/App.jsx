@@ -60,7 +60,8 @@ export default function BitbitApp() {
         </div>
       )}
 
-      <main className="max-w-md mx-auto">
+      {/* Main app content - mobile-first, expands on larger web screens */}
+      <main className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
         <Routes>
           <Route path="/home" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
           <Route path="/explore" element={<ExplorePage travelerAvailability={travelerAvailability} />} />
@@ -80,29 +81,33 @@ export default function BitbitApp() {
         </Routes>
       </main>
 
-      {/* Updated Navigation Bar */}
-      <BottomNavigation
-        showLabels
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 safe-area-bottom"
-        value={location.pathname}
-        onChange={(event, newValue) => navigate(newValue)}
-        sx={{
-          fontFamily: 'Figtree, Google Sans, sans-serif',
-          '& .Mui-selected': {
-            color: '#14A384',
-            fontWeight: 700,
-          },
-          '& .MuiBottomNavigationAction-label': {
-            fontFamily: 'Figtree, Google Sans, sans-serif',
-          },
-        }}
-      >
-        <BottomNavigationAction label="Home" value="/home" icon={<Home sx={{ color: location.pathname === '/home' ? '#14A384' : 'inherit' }} />} />
-        <BottomNavigationAction label="Explore" value="/explore" icon={<TravelExplore sx={{ color: location.pathname === '/explore' ? '#14A384' : 'inherit' }} />} />
-        <BottomNavigationAction label="Pasabuys" value="/orders" icon={<ShoppingCart sx={{ color: location.pathname === '/orders' ? '#14A384' : 'inherit' }} />} />
-        <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} />
-        <BottomNavigationAction label="Profile" value="/profile" icon={<AccountCircle sx={{ color: location.pathname === '/profile' ? '#14A384' : 'inherit' }} />} />
-      </BottomNavigation>
+      {/* Updated Navigation Bar - full width on mobile, centered container on larger web screens */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 safe-area-bottom">
+        <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
+          <BottomNavigation
+            showLabels
+            className="bg-white"
+            value={location.pathname}
+            onChange={(event, newValue) => navigate(newValue)}
+            sx={{
+              fontFamily: 'Figtree, Google Sans, sans-serif',
+              '& .Mui-selected': {
+                color: '#14A384',
+                fontWeight: 700,
+              },
+              '& .MuiBottomNavigationAction-label': {
+                fontFamily: 'Figtree, Google Sans, sans-serif',
+              },
+            }}
+          >
+            <BottomNavigationAction label="Home" value="/home" icon={<Home sx={{ color: location.pathname === '/home' ? '#14A384' : 'inherit' }} />} />
+            <BottomNavigationAction label="Explore" value="/explore" icon={<TravelExplore sx={{ color: location.pathname === '/explore' ? '#14A384' : 'inherit' }} />} />
+            <BottomNavigationAction label="Pasabuys" value="/orders" icon={<ShoppingCart sx={{ color: location.pathname === '/orders' ? '#14A384' : 'inherit' }} />} />
+            <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} />
+            <BottomNavigationAction label="Profile" value="/profile" icon={<AccountCircle sx={{ color: location.pathname === '/profile' ? '#14A384' : 'inherit' }} />} />
+          </BottomNavigation>
+        </div>
+      </div>
 
       {/* Modals remain global overlays */}
       <GroupOrderModal selectedGO={selectedGO} onClose={() => setSelectedGO(null)} showToast={showToast} />
