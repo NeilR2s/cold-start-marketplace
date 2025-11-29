@@ -14,22 +14,31 @@ import {
    ShieldCheck,
    X,
    User,
-   ArrowRightLeft
+   ArrowRightLeft,
+   Edit2,
+   Save
 } from 'lucide-react';
 import { Card, Badge, Avatar } from '@/components/CustomComponents';
 import { CURRENT_USER } from '@/data';
+import { saveLocalProfile } from '@/utils/profileStorage';
 
-const ProfilePage = ({ user, travelerAvailability, setTravelerAvailability }) => {
+const ProfilePage = ({ user, setUser, travelerAvailability, setTravelerAvailability }) => {
    const navigate = useNavigate();
    const [showExchangeModal, setShowExchangeModal] = useState(false);
    const [exchangeType, setExchangeType] = useState('send'); // 'send' | 'request'
    const [showCreditsInfo, setShowCreditsInfo] = useState(false);
+   const [showEditModal, setShowEditModal] = useState(false);
+   const [editForm, setEditForm] = useState({
+      displayName: user?.displayName || CURRENT_USER.displayName,
+      email: user?.email || "clara@example.com",
+      location: user?.location || "Ortigas, RET44",
+   });
 
    // Fallback data
    const profile = {
       displayName: user?.displayName || CURRENT_USER.displayName,
       email: user?.email || "clara@example.com",
-      location: "Ortigas, RET44",
+      location: user?.location || "Ortigas, RET44",
       joinedDate: "Sept 2023",
       reputationScore: Math.round((CURRENT_USER.reputationScore || 4.8) * 20),
       credits: 14.5,
@@ -68,6 +77,37 @@ const ProfilePage = ({ user, travelerAvailability, setTravelerAvailability }) =>
       window.location.href = "/";
    };
 
+   const handleEditSave = () => {
+      try {
+         const updated = saveLocalProfile({
+            displayName: editForm.displayName.trim(),
+            email: editForm.email.trim(),
+            location: editForm.location.trim(),
+         });
+         
+         // Update the user state in App.jsx
+         if (setUser) {
+            setUser(updated);
+         }
+         
+         // Trigger custom event for same-tab updates
+         window.dispatchEvent(new Event('profileUpdated'));
+         
+         setShowEditModal(false);
+      } catch (error) {
+         console.error('Error saving profile:', error);
+      }
+   };
+
+   const handleOpenEdit = () => {
+      setEditForm({
+         displayName: profile.displayName,
+         email: profile.email,
+         location: profile.location,
+      });
+      setShowEditModal(true);
+   };
+
    return (
       // Changed max-w-md to responsive max-w and added padding for larger screens
       <div className="animate-in fade-in px-4 py-6 md:px-8 md:py-10 max-w-md md:max-w-6xl mx-auto relative min-h-screen">
@@ -79,19 +119,48 @@ const ProfilePage = ({ user, travelerAvailability, setTravelerAvailability }) =>
                <div className="md:sticky md:top-24">
                   <Card className="p-2 border-none shadow-none bg-transparent md:bg-white md:border md:border-slate-200 md:shadow-sm md:p-6 text-center md:text-left">
                      
-                     {/* Avatar & Name */}
-                     <div className="flex flex-col items-center md:items-start">
-                        <Avatar name={profile.displayName} verified={true} size="lg" className="w-24 h-24 md:w-28 md:h-28" />
-                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mt-4">{profile.displayName}</h2>
-                        <div className="mt-2 flex items-center justify-center md:justify-start gap-2">
-                           <Badge type="neutral">
-                              <div className="flex items-center gap-1 leading-none">
-                                 <Star size={12} className="text-amber-500 fill-amber-500" />
-                                 <span>{profile.reputationScore}% Positive</span>
-                              </div>
-                           </Badge>
+                     {/* Avatar, Name & Edit */}
+                     <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col items-center md:items-start">
+                           <Avatar
+                              name={profile.displayName}
+                              verified={true}
+                              size="lg"
+                              className="w-24 h-24 md:w-28 md:h-28"
+                           />
+                           <h2 className="text-xl md:text-2xl font-bold text-slate-900 mt-4">
+                              {profile.displayName}
+                           </h2>
+                           <div className="mt-2 flex items-center justify-center md:justify-start gap-2">
+                              <Badge type="neutral">
+                                 <div className="flex items-center gap-1 leading-none">
+                                    <Star size={12} className="text-amber-500 fill-amber-500" />
+                                    <span>{profile.reputationScore}% Positive</span>
+                                 </div>
+                              </Badge>
+                           </div>
                         </div>
+
+                        {/* Edit profile trigger */}
+                        <button
+                           type="button"
+                           onClick={handleOpenEdit}
+                           className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-medium text-slate-500 hover:text-emerald-700 hover:border-emerald-400 hover:bg-emerald-50 transition-colors"
+                        >
+                           <Edit2 size={14} />
+                           Edit
+                        </button>
                      </div>
+
+                     {/* Mobile edit button */}
+                     <button
+                        type="button"
+                        onClick={handleOpenEdit}
+                        className="mt-4 inline-flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-medium text-slate-500 hover:text-emerald-700 hover:border-emerald-400 hover:bg-emerald-50 transition-colors"
+                     >
+                        <Edit2 size={14} />
+                        Edit Profile
+                     </button>
 
                      {/* Verification Progress */}
                      <div className="mt-6 w-full max-w-[240px] md:max-w-full mx-auto md:mx-0 flex flex-col gap-1">
@@ -427,6 +496,96 @@ const ProfilePage = ({ user, travelerAvailability, setTravelerAvailability }) =>
                         This makes every favor traceable and fair, and nudges the community to keep giving.
                      </p>
                   </div>
+               </div>
+            </div>
+         )}
+
+         {/* --- EDIT PROFILE MODAL --- */}
+         {showEditModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+               {/* Backdrop */}
+               <div 
+                  className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+                  onClick={() => setShowEditModal(false)}
+               />
+
+               {/* Modal Content */}
+               <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 animate-in zoom-in-95 duration-200">
+                  <div className="flex justify-between items-center mb-4">
+                     <h3 className="font-bold text-lg text-slate-800">Edit Profile</h3>
+                     <button 
+                        onClick={() => setShowEditModal(false)}
+                        className="p-1 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+                     >
+                        <X size={20} />
+                     </button>
+                  </div>
+
+                  <div className="space-y-4">
+                     {/* Display Name Input */}
+                     <div className="space-y-1.5 text-left">
+                        <label className="text-xs font-semibold text-slate-500 ml-1">
+                           Display Name
+                        </label>
+                        <div className="relative">
+                           <User size={18} className="absolute left-3 top-3 text-slate-400" />
+                           <input 
+                              type="text" 
+                              value={editForm.displayName}
+                              onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
+                              placeholder="Your name" 
+                              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                           />
+                        </div>
+                     </div>
+
+                     {/* Email Input */}
+                     <div className="space-y-1.5 text-left">
+                        <label className="text-xs font-semibold text-slate-500 ml-1">
+                           Email
+                        </label>
+                        <div className="relative">
+                           <Mail size={18} className="absolute left-3 top-3 text-slate-400" />
+                           <input 
+                              type="email" 
+                              value={editForm.email}
+                              onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                              placeholder="your.email@example.com" 
+                              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                           />
+                        </div>
+                     </div>
+
+                     {/* Location Input */}
+                     <div className="space-y-1.5 text-left">
+                        <label className="text-xs font-semibold text-slate-500 ml-1">
+                           Location
+                        </label>
+                        <div className="relative">
+                           <MapPin size={18} className="absolute left-3 top-3 text-slate-400" />
+                           <input 
+                              type="text" 
+                              value={editForm.location}
+                              onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                              placeholder="City, Area" 
+                              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                           />
+                        </div>
+                     </div>
+                  </div>
+
+                  <p className="mt-4 text-[10px] text-slate-500 text-center">
+                     Changes are saved locally and will update across all tabs
+                  </p>
+
+                  {/* Action Button */}
+                  <button 
+                     onClick={handleEditSave}
+                     className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+                  >
+                     <Save size={18} />
+                     Save Changes
+                  </button>
                </div>
             </div>
          )}

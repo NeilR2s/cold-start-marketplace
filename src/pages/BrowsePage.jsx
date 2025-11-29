@@ -5,9 +5,8 @@ import {
   Star, Heart, SlidersHorizontal, Map, Tag, X,
   ShieldCheck, Calendar, Info, CheckCircle, TrendingDown, Users, HeartHandshake, ArrowLeftRight
 } from 'lucide-react';
-import { TextField, InputAdornment, IconButton, Box } from '@mui/material';
+import { TextField, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import PinoyNeighborsLogo from '../assets/amazing.jpg';
 import { TravelerCard } from "../components/travelers/TravelerCard";
 import { TRAVELERS } from "../data/travelers";
@@ -568,13 +567,6 @@ function BrowsePage({ setIsPostTripOpen }) {
             InputProps={{
               disableUnderline: true,
               sx: { fontSize: 15, fontFamily: 'inherit', flex: 1, fontWeight: 500 },
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton size="small" sx={{ color: 'grey.400' }}>
-                    <PhotoCameraIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
             }}
             fullWidth
           />
