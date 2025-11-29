@@ -209,9 +209,8 @@ const ProductDetailModal = ({ product, onClose }) => {
                         <div className="flex justify-between items-start">
                             <h2 className="text-xl font-bold text-slate-900 leading-tight flex-1 mr-4">{product.title}</h2>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-emerald-600">{formatPHP(product.price)}</div>
-                                {product.originalPrice && <div className="text-xs text-slate-400 line-through">{formatPHP(product.originalPrice)}</div>}
-                            </div>
+                                <div className="text-sm text-slate-500 font-medium">{product.swapType}</div>
+                              </div>
                         </div>
                         <div className="mt-3 flex items-center gap-3 pb-4 border-b border-slate-100">
                             <Avatar src={product.user.image} name={product.user.name} verified={product.user.verified} size="lg" />
@@ -587,7 +586,7 @@ function BrowsePage() {
                 Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
               </button>
 
-              {PRODUCT_TYPES.map((cat, i) => (
+              {PRODUCT_TYPES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setFilterProductType(cat)}
@@ -687,10 +686,7 @@ function BrowsePage() {
                       </div>
 
                       <div className="flex items-baseline gap-1.5 mb-2">
-                        <span className="text-sm font-bold text-emerald-700">{formatPHP(product.price)}</span>
-                        {product.originalPrice && (
-                          <span className="text-[10px] text-slate-400 line-through">{formatPHP(product.originalPrice)}</span>
-                        )}
+                        <span className="text-sm text-slate-600 line-clamp-1">{product.swapHeadline}</span>
                       </div>
 
                   <div className="flex items-center gap-1 text-[10px] text-slate-500 mb-2">
