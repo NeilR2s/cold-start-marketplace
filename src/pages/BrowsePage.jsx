@@ -12,7 +12,7 @@ const BrowsePage = ({ mode, setMode, setSelectedGO, setIsPostTripOpen }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <div className="px-4 py-6 space-y-8 pb-28">
+    <div className="px-4 py-6 space-y-8 pb-28 ">
       {/* Search Bar placeholder - turn into component */}
       <Box sx={{
         display: 'flex',

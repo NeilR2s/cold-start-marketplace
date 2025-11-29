@@ -3,7 +3,7 @@ import { Package, MapPin, Camera, ArrowRight } from 'lucide-react';
 import { Card, Badge } from '@/components/CustomComponents';
 
 const OrdersPage = () => (
-  <div className="pb-24 space-y-6">
+  <div className="pb-24 space-y-6 px-4 py-6">
     <h1 className="text-2xl font-bold text-slate-900 mb-6">My Orders</h1>
     
     <Card className="p-0 border-l-4 border-l-emerald-500">

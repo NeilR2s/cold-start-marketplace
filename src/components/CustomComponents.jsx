@@ -77,3 +77,9 @@ export const BitbitLogo = ({ className, ...props }) => {
         </svg>
     );
 };
+
+// export const BitbitDrawing = ({className, ...props}) => {
+//     return (
+        
+//     )
+// }

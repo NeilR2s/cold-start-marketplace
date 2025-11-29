@@ -26,6 +26,7 @@ import BrowsePage from "./pages/BrowsePage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
+import WelcomePage from './pages/WelcomePage';
 
 export default function BitbitApp() {
   const navigate = useNavigate();
@@ -54,15 +55,16 @@ export default function BitbitApp() {
         </div>
       )}
 
-      <main className="max-w-md mx-auto px-4 py-6">
+      <main className="max-w-md mx-auto">
         <Routes>
-          <Route path="/" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
+          <Route path="/home" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route
             path="/profile"
             element={<ProfilePage user={CURRENT_USER} />}
           />
           <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/" element={<WelcomePage />} />
         </Routes>
       </main>
 
@@ -83,7 +85,7 @@ export default function BitbitApp() {
           },
         }}
       >
-        <BottomNavigationAction label="Home" value="/" icon={<Home sx={{ color: location.pathname === '/' ? '#14A384' : 'inherit' }} />} />
+        <BottomNavigationAction label="Home" value="/home" icon={<Home sx={{ color: location.pathname === '/' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Pasabuys" value="/orders" icon={<ShoppingCart sx={{ color: location.pathname === '/orders' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Profile" value="/profile" icon={<AccountCircle sx={{ color: location.pathname === '/profile' ? '#14A384' : 'inherit' }} />} />

@@ -112,7 +112,7 @@ const MessagesPage = () => {
   // Render the Main List
   if (!activeChatId) {
     return (
-      <div className="pb-24 space-y-6 animate-in fade-in">
+      <div className="pb-24 space-y-6 animate-in fade-in px-4 py-6">
         {/* Page Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-slate-900">Messages</h1>

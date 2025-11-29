@@ -3,7 +3,7 @@ import { Wallet, ChevronRight } from 'lucide-react';
 import { Card, Badge, Avatar } from '@/components/CustomComponents';
 
 const ProfilePage = ({ user }) => (
-  <div className="text-center animate-in fade-in">
+  <div className="text-center animate-in fade-in px-4 py-6">
     <div className="mt-4 mb-6">
        <Avatar name={user.displayName} verified={true} size="lg" />
        <h2 className="text-xl font-bold text-slate-900 mt-3">{user.displayName}</h2>
