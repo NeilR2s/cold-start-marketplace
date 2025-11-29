@@ -9,7 +9,7 @@ const WelcomePage = () => {
 
   return (
     // Main Container - Dark Green Background matching the screenshot
-    <div className="bg-[#0b3b2d] text-white font-[Figtree] overflow-x-hidden overflow-y-scroll min-h-screen w-fit px-0.5 py-6">
+    <div className="flex flex-col items-center justify-center bg-[#0b3b2d] text-white font-[Figtree] overflow-x-hidden overflow-y-scroll min-h-screen w-fit px-0.5 py-6">
       
 
       {/* --- FRAME 2: Shop Globally --- */}
