@@ -7,6 +7,7 @@ import {
 import { TextField, InputAdornment, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import PinoyNeighborsLogo from '../assets/amazing.jpg';
 
 // --- EXPANDED DATA SCHEMA ---
 
@@ -421,7 +422,8 @@ const BrowsePage = () => {
             One is handing over a home-baked pie, while the other is fixing a bike or holding a tool. 
             This visually explains "Goods for Services" without words. */}
           <img
-            src="https://media.istockphoto.com/id/507831862/photo/woman-bringing-meal-for-elderly-neighbour.jpg?s=612x612&w=0&k=20&c=VgQWMNvj1d3dPb0Qxiyf5ttb1GlLMzg5Rj5FftVqwjc="
+            // src="https://media.istockphoto.com/id/507831862/photo/woman-bringing-meal-for-elderly-neighbour.jpg?s=612x612&w=0&k=20&c=VgQWMNvj1d3dPb0Qxiyf5ttb1GlLMzg5Rj5FftVqwjc="
+            src={PinoyNeighborsLogo}
             alt="Two neighbors exchanging a home-cooked meal for a repair service"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
@@ -441,12 +443,12 @@ const BrowsePage = () => {
               </div>
             </div>
 
-            <h1 className="text-4xl font-extrabold mb-2 leading-tight">
+            <h1 className="text-3xl font-semibold mb-2 leading-tight">
               Swap items, <br /> skip the cash
             </h1>
 
             <p className="text-emerald-100/90 text-sm mb-6 font-medium max-w-[260px] leading-relaxed">
-              Swap services, trade goods, and connect with neighbors. No wallet required.
+              Trade albums, gadgets, food, and more with your community.
             </p>
 
             {/* TOGGLE: Seeking vs Offering */}
