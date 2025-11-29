@@ -88,7 +88,7 @@ export default function BitbitApp() {
         }}
       >
         <BottomNavigationAction label="Home" value="/home" icon={<Home sx={{ color: location.pathname === '/home' ? '#14A384' : 'inherit' }} />} />
-        <BottomNavigationAction label="Explore" value="/explore" icon={<TravelExplore sx={{ color: location.pathname === '/expl' ? '#14A384' : 'inherit' }} />} />
+        <BottomNavigationAction label="Explore" value="/explore" icon={<TravelExplore sx={{ color: location.pathname === '/explore' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Pasabuys" value="/orders" icon={<ShoppingCart sx={{ color: location.pathname === '/orders' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Messages" value="/messages" icon={<Message sx={{ color: location.pathname === '/messages' ? '#14A384' : 'inherit' }} />} />
         <BottomNavigationAction label="Profile" value="/profile" icon={<AccountCircle sx={{ color: location.pathname === '/profile' ? '#14A384' : 'inherit' }} />} />
