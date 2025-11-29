@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Package, Clock, CheckCircle, MoreHorizontal } from 'lucide-react';
 import { Card as CustomCard, Avatar } from '@/components/CustomComponents';
 import { CURRENT_USER } from '@/data';
@@ -101,9 +101,12 @@ const MOCK_TRANSACTIONS = [
 
 const OrdersPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [travelerTab, setTravelerTab] = useState('ongoing');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const fromHostTrip = location.state?.from === 'hostTrip';
 
   const filteredTransactions = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
@@ -141,6 +144,26 @@ const OrdersPage = () => {
             <Search size={20} />
           </button>
         </div>
+
+        {fromHostTrip && (
+          <div className="mt-2 rounded-2xl bg-emerald-50 border border-emerald-100 px-3 py-3 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-emerald-800">
+                Your pasabuy trip is live.
+              </p>
+              <p className="text-[11px] text-emerald-700 mt-0.5">
+                New orders will appear here once buyers book a slot. You can chat with each buyer from the order card.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/messages', { state: { chatType: 'pasabuy' } })}
+              className="shrink-0 rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-[11px] font-bold text-emerald-700 hover:bg-emerald-50"
+            >
+              Open Pasabuy Chats
+            </button>
+          </div>
+        )}
 
         {isSearchOpen && (
           <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-3 py-2 shadow-sm">

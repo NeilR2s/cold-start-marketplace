@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Search, LayoutGrid, Rows3 } from "lucide-react";
 import { SortDropdown } from "../components/explore/SortDropdown";
 import { FilterPills } from "../components/explore/FilterPills";
@@ -13,13 +13,24 @@ import { TravelerPage } from "../components/travelers/TravelerPage";
 
 const INITIAL_VISIBLE = 4;  
 
-const ExplorePage = () => {
+type TravelerAvailability = {
+  active: boolean;
+  until: string | null;
+};
+
+type ExplorePageProps = {
+  travelerAvailability?: TravelerAvailability;
+};
+
+const ExplorePage = ({ travelerAvailability }: ExplorePageProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
-  const [activeTab, setActiveTab] = useState<"swaps" | "travelers">("swaps");
+  const initialTab = (location.state as any)?.activeTab === "travelers" ? "travelers" : "swaps";
+  const [activeTab, setActiveTab] = useState<"swaps" | "travelers">(initialTab);
 
   const filteredListings = useMemo(() => filterListings(SWAP_LISTINGS, filters), [filters]);
   const sortedListings = useMemo(() => sortListings(filteredListings, filters.sort), [filteredListings, filters.sort]);
@@ -181,7 +192,24 @@ const ExplorePage = () => {
         </div>
       </section>
 
-      {activeTab === "swaps" ? renderSwapView() : <TravelerPage />}
+      {activeTab === "swaps" ? (
+        renderSwapView()
+      ) : (
+        <div className="space-y-3">
+          {travelerAvailability?.active && (
+            <div className="mx-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
+              <p className="font-semibold">You are visible as a traveler.</p>
+              <p className="mt-0.5">
+                Buyers can send you pasabuy requests
+                {travelerAvailability.until
+                  ? ` until ${new Date(travelerAvailability.until).toLocaleDateString()}.`
+                  : "."}
+              </p>
+            </div>
+          )}
+          <TravelerPage />
+        </div>
+      )}
     </div>
   );
 };
