@@ -34,7 +34,7 @@ export default function BitbitApp() {
   const location = useLocation();
 
   // 'activeTab' is removed; we use location.pathname to determine the active view
-  const [mode, setMode] = useState("buyer"); // 'buyer' | 'traveler'
+  const [mode, setMode] = useState("swapper"); // 'swapper' | 'host'
   const [selectedGO, setSelectedGO] = useState(null);
   const [isPostTripOpen, setIsPostTripOpen] = useState(false);
   const [toast, setToast] = useState(null);

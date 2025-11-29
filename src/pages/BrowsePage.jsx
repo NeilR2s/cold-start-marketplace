@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Globe, MapPin, ChevronRight, Plane, Plus, Bell, Package,
-  Filter, Star, Heart, SlidersHorizontal, Map, Tag, X,
-  ShieldCheck, Calendar, Info, CheckCircle, TrendingDown, HeartHandshake, ArrowLeftRight
+  Globe, MapPin, Plane, Plus, Package,
+  Star, Heart, SlidersHorizontal, Map, Tag, X,
+  ShieldCheck, Calendar, Info, CheckCircle, TrendingDown, Users, HeartHandshake, ArrowLeftRight
 } from 'lucide-react';
 import { TextField, InputAdornment, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -41,8 +42,14 @@ const MOCK_TRIPS = [
 const MOCK_PRODUCTS = [
   {
     id: 1,
+    tag: "sakura-tumbler",
     title: "Limited Starbucks Sakura Tumbler 2024",
     description: "Japan Exclusive 2024 Spring Collection. Double-walled stainless steel. Keeps drinks hot/cold for 6 hours. Includes box and shop bag.",
+    swapHeadline: "Need 3 more pastry bundles or cafe GCs to close the pool.",
+    whatOffering: "Sakura 2024 tumbler + reusable tote straight from Starbucks Shibuya.",
+    whatWant: "Pastry bundles, service hours, or local merch worth ₱250 each.",
+    openToBundles: true,
+    acceptsGroup: true,
     price: 1250,
     originalPrice: 1800,
     image: "https://images.unsplash.com/photo-1570784332176-fdd73da66f03?auto=format&fit=crop&q=80&w=600",
@@ -52,12 +59,33 @@ const MOCK_PRODUCTS = [
     swapType: "Group Order",
     deadline: "2024-03-10",
     pooling: { target: 15, current: 12, minFee: 50, baseFee: 150 },
-    user: { name: "Sarah J.", verified: true, rating: 4.9, image: "https://i.pravatar.cc/150?u=1" }
+    user: { name: "Sarah J.", verified: true, rating: 4.9, image: "https://i.pravatar.cc/150?u=1" },
+    hostView: {
+      type: "group",
+      announcement: "Pooling closes once 15 slots are filled. Handling fee drops to ₱50.",
+      swappers: [
+        { id: "sw1", name: "Andrea C.", avatar: "https://i.pravatar.cc/150?u=21", offer: "₱250 + Brownie Box", status: "Paid" },
+        { id: "sw2", name: "Kultura Hub", avatar: "https://i.pravatar.cc/150?u=22", offer: "Crochet Keychains bundle", status: "Confirmed" },
+        { id: "sw3", name: "Jam P.", avatar: "https://i.pravatar.cc/150?u=23", offer: "2hrs piano lessons", status: "Pending" }
+      ],
+      totalSlots: 15,
+      filledSlots: 12
+    },
+    comments: [
+      { id: "cm1", user: "Paolo V.", avatar: "https://i.pravatar.cc/150?u=31", message: "Can swap 2 hrs drum lessons + Benguet coffee beans.", timestamp: "2m ago", status: "pending" },
+      { id: "cm2", user: "Faye D.", avatar: "https://i.pravatar.cc/150?u=32", message: "Offering matcha cookies + tote bag. Keen to join!", timestamp: "18m ago", status: "accepted" }
+    ]
   },
   {
     id: 2,
+    tag: "gentle-monster",
     title: "Gentle Monster Sunglasses (Rick 01)",
     description: "Buying strictly from the flagship store in Haus Dosan. Comes with official warranty card and white packaging.",
+    swapHeadline: "Looking for film stock + service hours for styling.",
+    whatOffering: "Legit Gentle Monster Rick 01 frame with travel receipt + box.",
+    whatWant: "Kodak Gold film packs or styling / content services of equal value.",
+    openToBundles: true,
+    acceptsGroup: false,
     price: 15400,
     originalPrice: null,
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=600",
@@ -67,12 +95,37 @@ const MOCK_PRODUCTS = [
     swapType: "Pasabuy",
     deadline: "2024-03-14",
     pooling: null,
-    user: { name: "Mike T.", verified: true, rating: 5.0, image: "https://i.pravatar.cc/150?u=2" }
+    user: { name: "Mike T.", verified: true, rating: 5.0, image: "https://i.pravatar.cc/150?u=2" },
+    hostView: {
+      type: "single",
+      swapper: {
+        name: "Luna Park",
+        avatar: "https://i.pravatar.cc/150?u=41",
+        offer: "Custom crochet bag + ₱500 courier credits",
+        status: "Negotiating",
+        timeline: [
+          { label: "Offer Sent", state: "done" },
+          { label: "Host Review", state: "active" },
+          { label: "Drop-off", state: "pending" },
+          { label: "Swap Complete", state: "pending" }
+        ]
+      },
+      meetupNote: "Preferred meetup at Greenbelt weekends."
+    },
+    comments: [
+      { id: "cm3", user: "Noah Film", avatar: "https://i.pravatar.cc/150?u=33", message: "Can trade 5 rolls Kodak Portra + lookbook shoot.", timestamp: "1h ago", status: "pending" }
+    ]
   },
   {
     id: 3,
+    tag: "hokkaido-cookies",
     title: "Hokkaido Butter Cookies (24pc)",
     description: "Extra boxes from my recent trip. Expiry date: Sept 2024. Sealed and kept in cool storage.",
+    swapHeadline: "Wants craft supplies or hand-poured candles.",
+    whatOffering: "Factory-sealed 24pc cookie tins, hand-carried from Sapporo.",
+    whatWant: "Handmade candles, crochet services, or grocery GCs.",
+    openToBundles: false,
+    acceptsGroup: false,
     price: 850,
     originalPrice: 1100,
     image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR7t0BaVwnqTJze2hhwNNH1VWzzVcuktKeVg&s",
@@ -82,9 +135,12 @@ const MOCK_PRODUCTS = [
     swapType: "On Hand",
     deadline: null,
     pooling: null,
-    user: { name: "Japan Goodies PH", verified: false, rating: 4.8, image: "https://i.pravatar.cc/150?u=3" }
-  },
-  // ... (Other items would follow similar extended structure)
+    user: { name: "Japan Goodies PH", verified: false, rating: 4.8, image: "https://i.pravatar.cc/150?u=3" },
+    hostView: null,
+    comments: [
+      { id: "cm4", user: "Iris Crafts", avatar: "https://i.pravatar.cc/150?u=34", message: "Offering 2 soy candles + delivery coverage.", timestamp: "3h ago", status: "declined" }
+    ]
+  }
 ];
 
 // --- UTILS & SHARED COMPONENTS ---
@@ -117,6 +173,14 @@ const Badge = ({ children, type }) => {
   );
 };
 
+const BID_STATUS_META = {
+  accepted: { label: 'Accepted', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  declined: { label: 'Not Accepted', classes: 'bg-rose-50 text-rose-700 border-rose-100' },
+  pending: { label: 'Bid Pending', classes: 'bg-slate-100 text-slate-600 border-slate-200' }
+};
+
+const getBidStatusBadge = (status = 'pending') => BID_STATUS_META[status] || BID_STATUS_META.pending;
+
 // --- MODAL COMPONENTS ---
 
 const ProductDetailModal = ({ product, onClose }) => {
@@ -139,29 +203,29 @@ const ProductDetailModal = ({ product, onClose }) => {
           </div>
         </div>
 
-        <div className="overflow-y-auto p-5 space-y-6">
-          {/* Title & Price */}
-          <div>
-            <div className="flex justify-between items-start">
-              <h2 className="text-xl font-bold text-slate-900 leading-tight flex-1 mr-4">{product.title}</h2>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-emerald-600">{formatPHP(product.price)}</div>
-                {product.originalPrice && <div className="text-xs text-slate-400 line-through">{formatPHP(product.originalPrice)}</div>}
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-3 pb-4 border-b border-slate-100">
-              <Avatar src={product.user.image} name={product.user.name} verified={product.user.verified} size="lg" />
-              <div>
-                <div className="text-sm font-bold text-slate-900">{product.user.name}</div>
-                <div className="flex items-center text-xs text-slate-500">
-                  <Star size={12} className="text-amber-400 fill-amber-400 mr-1" />
-                  <span>{product.user.rating} Rating</span>
-                  <span className="mx-1">•</span>
-                  <MapPin size={12} className="mr-0.5" /> {product.location}
-                </div>
-              </div>
-            </div>
-          </div>
+                <div className="overflow-y-auto p-5 space-y-6">
+                    {/* Title & Price */}
+                    <div>
+                        <div className="flex justify-between items-start">
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight flex-1 mr-4">{product.title}</h2>
+                            <div className="text-right">
+                                <div className="text-2xl font-bold text-emerald-600">{formatPHP(product.price)}</div>
+                                {product.originalPrice && <div className="text-xs text-slate-400 line-through">{formatPHP(product.originalPrice)}</div>}
+                            </div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-3 pb-4 border-b border-slate-100">
+                            <Avatar src={product.user.image} name={product.user.name} verified={product.user.verified} size="lg" />
+                            <div>
+                                <div className="text-sm font-bold text-slate-900">{product.user.name}</div>
+                                <div className="flex items-center text-xs text-slate-500">
+                                    <Star size={12} className="text-amber-400 fill-amber-400 mr-1" />
+                                    <span>{product.user.rating} Rating</span>
+                                    <span className="mx-1">•</span>
+                                    <MapPin size={12} className="mr-0.5" /> {product.location}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
           {/* Group Order Visualizer */}
           {isGroupOrder && product.pooling && (
@@ -203,17 +267,17 @@ const ProductDetailModal = ({ product, onClose }) => {
             <p className="text-sm text-slate-600 leading-relaxed">{product.description || "No description provided."}</p>
           </div>
 
-          {/* Trust Badge */}
-          <div className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-            <ShieldCheck className="text-slate-400 flex-shrink-0" size={20} />
-            <div>
-              <h4 className="text-xs font-bold text-slate-700">Escrow Protected</h4>
-              <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
-                Your payment is held securely until you receive the item.
-              </p>
-            </div>
-          </div>
-        </div>
+                    {/* Trust Badge */}
+                    <div className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                        <ShieldCheck className="text-slate-400 flex-shrink-0" size={20} />
+                        <div>
+                            <h4 className="text-xs font-bold text-slate-700">Escrow Protected</h4>
+                            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                                Your payment is held securely until you receive the item.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 bg-white mt-auto">
@@ -330,8 +394,9 @@ const TravelerDetailModal = ({ trip, onClose }) => {
 
 // --- MAIN PAGE COMPONENT ---
 
-const BrowsePage = () => {
-  const [mode, setMode] = useState('buyer');
+function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = () => {} }) {
+  const navigate = useNavigate();
+  const isHostView = mode === 'host';
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal States
@@ -343,6 +408,36 @@ const BrowsePage = () => {
   const [filterSwapType, setFilterSwapType] = useState('All');
   const [filterProductType, setFilterProductType] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
+
+  const hostGroupProduct = useMemo(
+    () => MOCK_PRODUCTS.find(item => item.hostView?.type === 'group'),
+    []
+  );
+  const hostSingleProduct = useMemo(
+    () => MOCK_PRODUCTS.find(item => item.hostView?.type === 'single'),
+    []
+  );
+
+  const handleOpenChat = (product) => {
+    if (!product) return;
+    navigate('/messages', { state: { productTag: product.tag } });
+    setSelectedProduct(null);
+  };
+
+  const handleAddProduct = () => {
+    setIsPostTripOpen(true);
+  };
+
+  const getStatusClass = (status) => {
+    const classes = {
+      Paid: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      Confirmed: 'bg-blue-50 text-blue-700 border-blue-100',
+      Pending: 'bg-amber-50 text-amber-700 border-amber-100',
+      Negotiating: 'bg-purple-50 text-purple-700 border-purple-100',
+      default: 'bg-slate-100 text-slate-600 border-slate-200'
+    };
+    return classes[status] || classes.default;
+  };
 
   // Filter Options
   const LOCATIONS = ["All", "Nearby (<5km)", "Quezon City", "Makati", "BGC", "Manila"];
@@ -375,7 +470,12 @@ const BrowsePage = () => {
   return (
     <div className="bg-slate-50 min-h-screen pb-24 font-sans text-slate-900">
       {/* --- MODALS --- */}
-      <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <ProductDetailModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        mode={mode}
+        onOpenChat={handleOpenChat}
+      />
       <TravelerDetailModal trip={selectedTrip} onClose={() => setSelectedTrip(null)} />
 
       {/* --- HEADER SECTION --- */}
@@ -457,7 +557,7 @@ const BrowsePage = () => {
                 onClick={() => setMode('seeking')}
                 className={`flex items-center gap-2 px-5 py-2 rounded-md text-[12px] font-bold transition-all duration-300 ${mode === 'seeking' ? 'bg-white text-emerald-800 shadow-lg scale-100' : 'text-emerald-50 hover:bg-white/5'}`}
               >
-                <span>I need help</span>
+                Buyer
               </button>
               <button
                 onClick={() => setMode('offering')}
@@ -573,12 +673,12 @@ const BrowsePage = () => {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[10px] text-slate-500 mb-2">
-                        <MapPin size={10} />
-                        <span className="truncate max-w-[80px]">{product.location}</span>
-                        <span className="text-slate-300">•</span>
-                        <span>{product.distance}km</span>
-                      </div>
+                  <div className="flex items-center gap-1 text-[10px] text-slate-500 mb-2">
+                    <MapPin size={10} />
+                    <span className="truncate max-w-[80px]">{product.location}</span>
+                    <span className="text-slate-300">•</span>
+                    <span>{product.distance}km</span>
+                  </div>
 
                       <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
