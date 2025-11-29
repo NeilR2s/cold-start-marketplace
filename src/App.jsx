@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction } from '@mui/material';
 import { Home, ShoppingCart, Message, AccountCircle, TravelExplore } from '@mui/icons-material';
@@ -16,6 +16,7 @@ import {
 // Data and Custom Components
 import { Avatar, BitbitLogo, Header } from "./components/CustomComponents";
 import { CURRENT_USER } from "./data";
+import { getLocalProfile } from "./utils/profileStorage";
 
 // Import Modals
 import GroupOrderModal from "./components/GroupOrderModal";
@@ -42,6 +43,29 @@ export default function BitbitApp() {
     active: false,
     until: null,
   });
+  
+  // User state from localStorage (with CURRENT_USER as fallback)
+  const [user, setUser] = useState(() => getLocalProfile());
+
+  // Listen for localStorage changes (for cross-tab synchronization)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'bitbit_local_profile') {
+        setUser(getLocalProfile());
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    // Also listen for custom events for same-tab updates
+    const handleProfileUpdate = () => {
+      setUser(getLocalProfile());
+    };
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, []);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -65,12 +89,13 @@ export default function BitbitApp() {
         <Routes>
           <Route path="/home" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
           <Route path="/explore" element={<ExplorePage travelerAvailability={travelerAvailability} />} />
-          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/orders" element={<OrdersPage user={user} />} />
           <Route
             path="/profile"
             element={
               <ProfilePage
-                user={CURRENT_USER}
+                user={user}
+                setUser={setUser}
                 travelerAvailability={travelerAvailability}
                 setTravelerAvailability={setTravelerAvailability}
               />
