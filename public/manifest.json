@@ -1,6 +1,68 @@
 {
     "theme_color": "#114232",
     "background_color": "#114232",
+  "shortcuts":[
+    {
+        "name":"Home",
+        "short_name": "Home",
+        "description": "Home Page",
+        "url": "/home",
+        "icons": [{
+          "src": "/home.png",
+          "sizes": "192x192",
+          "type": "image/svg+xml",
+          "purpose": "any"
+        }]
+    },
+    {
+        "name":"Explore",
+        "short_name": "Explore",
+        "description": "Explore",
+        "url": "/explore",
+        "icons": [{
+          "src": "/explore.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }]
+    },
+    {
+        "name":"Pasabuys",
+        "short_name": "Pasabuys",
+        "description": "Pasabuys",
+        "url": "/pasabuys",
+        "icons": [{
+          "src": "/pasabuys.jpg",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }]
+    },
+    {
+        "name":"Messages",
+        "short_name": "Messages",
+        "description": "Messages",
+        "url": "/messages",
+        "icons": [{
+          "src": "/messages.jpg",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }]
+    },
+    {
+        "name":"Profile",
+        "short_name": "Profile",
+        "description": "Profile",
+        "url": "/profile",
+        "icons": [{
+          "src": "/profile.jpg",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }]
+    },
+  ],
     "icons": [
         {
             "purpose": "maskable",
