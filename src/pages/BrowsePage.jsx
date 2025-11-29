@@ -71,10 +71,10 @@ const MOCK_PRODUCTS = [
   },
   {
     id: 6,
-    title: "Nintendo Switch OLED - White",
+    title: "Nintendo Switch OLED - Gold",
     price: 14500,
     originalPrice: 16999,
-    image: "",
+    image: "https://ecommerce.datablitz.com.ph/cdn/shop/files/4_286e1fa7-9ad9-4533-884c-01a4de4d7931.jpg?v=1719309586",
     location: "Pasig",
     distance: 6.0,
     type: "Gadgets",
