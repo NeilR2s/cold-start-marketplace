@@ -91,7 +91,7 @@ export function SwapCard({ listing, layout = "grid" }: SwapCardProps) {
           </span>
         </div>
 
-        <div className="mt-auto grid gap-2 sm:grid-cols-2">
+        <div className="mt-auto flex flex-col gap-2">
           <button
             type="button"
             className="rounded-full border border-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"

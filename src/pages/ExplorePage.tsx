@@ -8,7 +8,7 @@ import { SWAP_LISTINGS } from "../data/swapListings";
 import { buildFilterPills, defaultFilters, filterListings, sortListings } from "../utils/exploreFilters";
 import { FilterState, SortOption } from "../types/explore";
 
-const INITIAL_VISIBLE = 4;
+const INITIAL_VISIBLE = 4;  
 
 const ExplorePage = () => {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
