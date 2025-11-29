@@ -43,7 +43,7 @@ export default function BitbitApp() {
     active: false,
     until: null,
   });
-  
+
   // User state from localStorage (with CURRENT_USER as fallback)
   const [user, setUser] = useState(() => getLocalProfile());
 
@@ -60,7 +60,7 @@ export default function BitbitApp() {
       setUser(getLocalProfile());
     };
     window.addEventListener('profileUpdated', handleProfileUpdate);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('profileUpdated', handleProfileUpdate);
@@ -102,9 +102,13 @@ export default function BitbitApp() {
             }
           />
           <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/" element={<WelcomePage />} />
         </Routes>
       </main>
+      <div className="safe-area-bottom h-screen w-screen overflow-hidden m-0 p-0">
+        <Routes>
+          <Route path="/" element={<WelcomePage />} />
+        </Routes>
+      </div>
 
       {/* Updated Navigation Bar - full width on mobile, centered container on larger web screens */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 safe-area-bottom">
