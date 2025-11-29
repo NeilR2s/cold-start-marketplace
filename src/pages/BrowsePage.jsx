@@ -12,7 +12,7 @@ const BrowsePage = ({ mode, setMode, setSelectedGO, setIsPostTripOpen }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <div className="space-y-8 pb-28">
+    <div className="px-4 py-6 space-y-8 pb-28">
       {/* Search Bar placeholder - turn into component */}
       <Box sx={{
         display: 'flex',
@@ -29,12 +29,12 @@ const BrowsePage = ({ mode, setMode, setSelectedGO, setIsPostTripOpen }) => {
         <SearchIcon sx={{ color: 'grey.500', fontSize: 32, mr: 1 }} />
         <TextField
           variant="standard"
-          placeholder="search here"
+          placeholder="Search a product"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           InputProps={{
             disableUnderline: true,
-            sx: { fontSize: 20, fontFamily: 'Figtree', flex: 1 },
+            sx: { fontSize: 16, fontFamily: 'Figtree', flex: 1 },
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton edge="end" sx={{ color: 'grey.500' }}>
