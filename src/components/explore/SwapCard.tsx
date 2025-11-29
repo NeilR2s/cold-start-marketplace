@@ -6,9 +6,10 @@ import { LocationBadge } from "./LocationBadge";
 type SwapCardProps = {
   listing: SwapListing;
   layout?: "grid" | "list";
+  onChatHost?: (listing: SwapListing) => void;
 };
 
-export function SwapCard({ listing, layout = "grid" }: SwapCardProps) {
+export function SwapCard({ listing, layout = "grid", onChatHost }: SwapCardProps) {
   const showContributorBar = listing.barterType === "Group Swap" || listing.barterType === "1-to-Many Swap";
 
   return (
@@ -101,8 +102,9 @@ export function SwapCard({ listing, layout = "grid" }: SwapCardProps) {
           <button
             type="button"
             className="flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+            onClick={() => onChatHost?.(listing)}
           >
-            Make an Offer <ArrowRight className="h-4 w-4" />
+            Chat Host <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>

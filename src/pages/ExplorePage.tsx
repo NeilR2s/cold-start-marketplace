@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, LayoutGrid, Rows3 } from "lucide-react";
 import { SortDropdown } from "../components/explore/SortDropdown";
 import { FilterPills } from "../components/explore/FilterPills";
@@ -13,6 +14,7 @@ import { TravelerPage } from "../components/travelers/TravelerPage";
 const INITIAL_VISIBLE = 4;  
 
 const ExplorePage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [layout, setLayout] = useState<"grid" | "list">("grid");
@@ -71,14 +73,25 @@ const ExplorePage = () => {
 
   const handleSearchChange = (value: string) => updateFilters({ ...filters, query: value });
 
+  const handleChatHost = (listing: typeof SWAP_LISTINGS[number]) => {
+    const conversationId = listing.conversationId || "swap-chat-sarah";
+    navigate("/messages", {
+      state: {
+        conversationId,
+        chatType: "host",
+        productTag: listing.id,
+      },
+    });
+  };
+
   const renderSwapView = () => (
-    <div className="space-y-5 pt-4">
-      <header className="space-y-4 px-4">
-        <div>
-          <p className="text-xs font-semibold uppercase text-emerald-600">Explore Swaps</p>
-          <h2 className="text-2xl font-black text-slate-900">Trade stories, not cash.</h2>
-          <p className="text-sm text-slate-500">Browse curated barter listings powered by the Bitbit community.</p>
-        </div>
+    <div className="space-y-5 pt-2">
+      <header className="space-y-3 px-4">
+        <p className="text-xs font-semibold uppercase text-emerald-600">Swap marketplace</p>
+        <h2 className="text-xl font-bold text-slate-900">Discover active barter-only listings.</h2>
+        <p className="text-sm text-slate-500">
+          Filter by barter type, kapalit, exchange method, and tags to find your next swap.
+        </p>
 
         <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
           <Search className="h-5 w-5 text-slate-400" />
@@ -128,6 +141,7 @@ const ExplorePage = () => {
           layout={layout}
           onLoadMore={() => setVisibleCount((prev) => prev + 4)}
           hasMore={hasMore}
+          onChatHost={handleChatHost}
         />
       </section>
 

@@ -296,13 +296,8 @@ const ProductDetailModal = ({ product, onClose, onMessageHost }) => {
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 bg-white mt-auto space-y-2">
           <button
-            className={`w-full py-3 rounded-xl font-bold transition-all ${
-              product?.conversationId
-                ? "border border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
-                : "border border-slate-100 text-slate-400 cursor-not-allowed bg-slate-50"
-            }`}
+            className="w-full py-3 rounded-xl font-bold transition-all border border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
             onClick={() => onMessageHost?.(product)}
-            disabled={!product?.conversationId}
           >
             Message Host
           </button>
@@ -482,11 +477,11 @@ function BrowsePage() {
   };
 
   const handleMessageHost = (product) => {
-    if (!product?.conversationId) return;
+    const conversationId = product?.conversationId || "swap-chat-sarah";
     setSelectedProduct(null);
     navigate("/messages", {
       state: {
-        conversationId: product.conversationId,
+        conversationId,
         chatType: "host",
         productTag: product.tag,
       },

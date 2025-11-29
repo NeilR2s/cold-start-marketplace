@@ -75,6 +75,8 @@ export interface SwapListing {
   title: string;
   subtitle: string;
   barterType: BarterType;
+  // Optional: when present, allows "Chat Host" CTAs to deep-link into a sample conversation
+  conversationId?: string;
   category: CategoryName;
   exchangeMethods: ExchangeMethod[];
   locationLabel: string;

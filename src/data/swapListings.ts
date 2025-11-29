@@ -3,6 +3,7 @@ import { SwapListing } from "../types/explore";
 export const SWAP_LISTINGS: SwapListing[] = [
   {
     id: "swap-001",
+    conversationId: "swap-chat-sarah",
     title: "Baguio Treats Bundle",
     subtitle: "Fresh ube jam + choco flakes pasalubong",
     barterType: "1:1 Swap",
@@ -30,6 +31,7 @@ export const SWAP_LISTINGS: SwapListing[] = [
   },
   {
     id: "swap-002",
+    conversationId: "swap-chat-mike",
     title: "Mirrorless Camera Kit",
     subtitle: "Fujifilm X-S20 travel-ready pack",
     barterType: "1-to-Many Swap",
@@ -57,6 +59,7 @@ export const SWAP_LISTINGS: SwapListing[] = [
   },
   {
     id: "swap-003",
+    conversationId: "swap-chat-sarah",
     title: "Home Cold Brew Starter",
     subtitle: "All-in-one coffee experience",
     barterType: "1:1 Swap",
@@ -84,6 +87,7 @@ export const SWAP_LISTINGS: SwapListing[] = [
   },
   {
     id: "swap-004",
+    conversationId: "swap-chat-mike",
     title: "Seoul Fashion Pack",
     subtitle: "Layered fits straight from Hongdae",
     barterType: "Group Swap",
@@ -116,6 +120,7 @@ export const SWAP_LISTINGS: SwapListing[] = [
   },
   {
     id: "swap-005",
+    conversationId: "swap-chat-sarah",
     title: "DIY Terrarium Set",
     subtitle: "Workshop-ready plant kit",
     barterType: "1-to-Many Swap",
@@ -147,6 +152,7 @@ export const SWAP_LISTINGS: SwapListing[] = [
   },
   {
     id: "swap-006",
+    conversationId: "swap-chat-mike",
     title: "Premium Pasalubong Loot",
     subtitle: "Dubai + Tokyo snack mash-up",
     barterType: "Group Swap",
