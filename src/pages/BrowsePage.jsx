@@ -117,6 +117,32 @@ const MOCK_PRODUCTS = [
     comments: [
       { id: "cm4", user: "Iris Crafts", avatar: "https://i.pravatar.cc/150?u=34", message: "Offering 2 soy candles + delivery coverage.", timestamp: "3h ago", status: "declined" }
     ]
+  },
+  {
+    id: 4,
+    conversationId: "swap-chat-lex",
+    tag: "mirrorless-camera-kit",
+    title: "Mirrorless Camera Kit",
+    description: "Fujifilm X-S20 travel-ready pack with kit lens, extra batteries, and SD card — mirrored from Explore.",
+    swapHeadline: "Open to bundle of K-pop albums + handmade crafts.",
+    whatOffering: "Body + kit lens + 2 batteries + 128GB SD, same as the Explore listing.",
+    whatWant: "Creative bundles, collectibles, or services of similar value.",
+    openToBundles: true,
+    acceptsGroup: false,
+    price: 15400,
+    originalPrice: null,
+    image: "https://images.unsplash.com/photo-1508898578281-774ac4893c0c?auto=format&fit=crop&w=800&q=60",
+    location: "Makati",
+    distance: 8.1,
+    type: "Gadgets",
+    swapType: "On Hand",
+    deadline: null,
+    pooling: null,
+    user: { name: "Ken of BGC", verified: true, rating: 5.0, image: "https://i.pravatar.cc/150?u=2" },
+    hostView: null,
+    comments: [
+      { id: "cm5", user: "Studio Nine", avatar: "https://i.pravatar.cc/150?u=35", message: "Offering product shots + promo clips.", timestamp: "45m ago", status: "pending" }
+    ]
   }
 ];
 
@@ -694,7 +720,7 @@ function BrowsePage({ setIsPostTripOpen }) {
             </div>
 
             {/* --- PRODUCTS GRID --- */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map(product => (
                   <div
@@ -720,7 +746,7 @@ function BrowsePage({ setIsPostTripOpen }) {
                     {/* Content */}
                     <div className="p-3">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-xs font-bold text-slate-800 line-clamp-2 leading-snug min-h-[2.5em]">
+                        <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug min-h-[2.5em]">
                           {product.title}
                         </h3>
                       </div>
@@ -729,19 +755,19 @@ function BrowsePage({ setIsPostTripOpen }) {
                         <span className="text-sm text-slate-600 line-clamp-1">{product.swapHeadline}</span>
                       </div>
 
-                  <div className="flex items-center gap-1 text-[10px] text-slate-500 mb-2">
-                    <MapPin size={10} />
-                    <span className="truncate max-w-[80px]">{product.location}</span>
-                    <span className="text-slate-300">•</span>
-                    <span>{product.distance}km</span>
-                  </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-500 mb-2">
+                        <MapPin size={10} />
+                        <span className="truncate max-w-[80px]">{product.location}</span>
+                        <span className="text-slate-300">•</span>
+                        <span>{product.distance}km</span>
+                      </div>
 
                       <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <Avatar src={product.user.image} name={product.user.name} />
-                          <span className="text-[10px] font-medium text-slate-600 truncate max-w-[60px]">{product.user.name}</span>
+                          <span className="text-xs font-medium text-slate-600 truncate max-w-[60px]">{product.user.name}</span>
                         </div>
-                        <div className="flex items-center text-[10px] font-bold text-amber-500">
+                        <div className="flex items-center text-xs font-bold text-amber-500">
                           <Star size={10} className="fill-amber-500 mr-0.5" />
                           {product.user.rating}
                         </div>
