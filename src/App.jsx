@@ -12,8 +12,6 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import { BottomNavigation, BottomNavigationAction } from '@mui/material';
-import { Home, ShoppingCart, Message, AccountCircle } from '@mui/icons-material';
 
 // Data and Custom Components
 import { Avatar, BitbitLogo, Header } from "./components/CustomComponents";

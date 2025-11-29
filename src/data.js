@@ -72,3 +72,10 @@ export const MOCK_GOS = [
     biases: [] 
   }
 ];
+
+export const PRICE_BREAKDOWN = {
+  basePrice: 150,
+  tax: 15,
+  hostFee: 20,
+  handlingFee: 10,
+};
