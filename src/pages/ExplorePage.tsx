@@ -6,7 +6,9 @@ import { FilterDrawer } from "../components/explore/FilterDrawer";
 import { SwapGrid } from "../components/explore/SwapGrid";
 import { SWAP_LISTINGS } from "../data/swapListings";
 import { buildFilterPills, defaultFilters, filterListings, sortListings } from "../utils/exploreFilters";
-import { FilterState, SortOption } from "../types/explore";
+import { FilterState, SwapSortOption } from "../types/explore";
+import { SWAP_SORT_OPTIONS } from "../constants/exploreFilters";
+import { TravelerPage } from "../components/travelers/TravelerPage";
 
 const INITIAL_VISIBLE = 4;  
 
@@ -15,6 +17,7 @@ const ExplorePage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const [activeTab, setActiveTab] = useState<"swaps" | "travelers">("swaps");
 
   const filteredListings = useMemo(() => filterListings(SWAP_LISTINGS, filters), [filters]);
   const sortedListings = useMemo(() => sortListings(filteredListings, filters.sort), [filteredListings, filters.sort]);
@@ -28,7 +31,7 @@ const ExplorePage = () => {
     setFilters(next);
   };
 
-  const handleSortChange = (value: SortOption) => updateFilters({ ...filters, sort: value });
+  const handleSortChange = (value: SwapSortOption) => updateFilters({ ...filters, sort: value });
 
   const handlePillRemove = (key: string) => {
     if (key === "query") {
@@ -68,12 +71,12 @@ const ExplorePage = () => {
 
   const handleSearchChange = (value: string) => updateFilters({ ...filters, query: value });
 
-  return (
-    <div className="space-y-5 pb-24 pt-6">
+  const renderSwapView = () => (
+    <div className="space-y-5 pt-4">
       <header className="space-y-4 px-4">
         <div>
           <p className="text-xs font-semibold uppercase text-emerald-600">Explore Swaps</p>
-          <h1 className="text-2xl font-black text-slate-900">Trade stories, not cash.</h1>
+          <h2 className="text-2xl font-black text-slate-900">Trade stories, not cash.</h2>
           <p className="text-sm text-slate-500">Browse curated barter listings powered by the Bitbit community.</p>
         </div>
 
@@ -90,7 +93,12 @@ const ExplorePage = () => {
 
       <section className="space-y-4 px-4">
         <div className="flex flex-col gap-3">
-          <SortDropdown value={filters.sort} onChange={handleSortChange} onOpenFilters={() => setDrawerOpen(true)} />
+          <SortDropdown
+            value={filters.sort}
+            options={SWAP_SORT_OPTIONS}
+            onChange={handleSortChange}
+            onOpenFilters={() => setDrawerOpen(true)}
+          />
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -130,6 +138,36 @@ const ExplorePage = () => {
         onClose={() => setDrawerOpen(false)}
         onReset={() => updateFilters(defaultFilters)}
       />
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 pb-24 pt-6">
+      <section className="space-y-4 px-4">
+        <div>
+          <p className="text-xs font-semibold uppercase text-emerald-600">Explore Bitbit</p>
+          <h1 className="text-2xl font-black text-slate-900">Choose your swap adventure.</h1>
+          <p className="text-sm text-slate-500">Toggle between curated swap listings and the traveler network.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 rounded-full bg-slate-100 p-1 text-sm font-semibold">
+          <button
+            type="button"
+            className={`rounded-full px-4 py-2 ${activeTab === "swaps" ? "bg-white text-slate-900 shadow" : "text-slate-500"}`}
+            onClick={() => setActiveTab("swaps")}
+          >
+            Swap marketplace
+          </button>
+          <button
+            type="button"
+            className={`rounded-full px-4 py-2 ${activeTab === "travelers" ? "bg-white text-slate-900 shadow" : "text-slate-500"}`}
+            onClick={() => setActiveTab("travelers")}
+          >
+            Traveler network
+          </button>
+        </div>
+      </section>
+
+      {activeTab === "swaps" ? renderSwapView() : <TravelerPage />}
     </div>
   );
 };
