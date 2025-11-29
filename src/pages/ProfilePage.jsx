@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
    Clock,
    ChevronRight,
@@ -16,23 +17,51 @@ import {
    ArrowRightLeft // New
 } from 'lucide-react';
 import { Card, Badge, Avatar } from '@/components/CustomComponents';
+import { CURRENT_USER } from '@/data';
 
-const ProfilePage = () => {
+const ProfilePage = ({ user, travelerAvailability, setTravelerAvailability }) => {
+   const navigate = useNavigate();
    const [showExchangeModal, setShowExchangeModal] = useState(false);
    const [exchangeType, setExchangeType] = useState('send'); // 'send' | 'request'
+   const [showCreditsInfo, setShowCreditsInfo] = useState(false);
 
-   // Fallback data
+   // Fallback data (now defaults to CURRENT_USER so name is consistent across tabs)
    const profile = {
-      displayName: "Elena R.",
-      email: "elena.rose@example.com",
+      displayName: user?.displayName || CURRENT_USER.displayName,
+      email: user?.email || "clara@example.com",
       location: "Ortigas, RET44",
       joinedDate: "Sept 2023",
-      reputationScore: 98,
+      reputationScore: Math.round((CURRENT_USER.reputationScore || 4.8) * 20),
       credits: 14.5,
       skills: ["Web Design", "Gardening", "Pet Sitting"],
       activeSwaps: 2,
       verificationProgress: 75,
       verificationSteps: "3/4"
+   };
+
+   const isTravelerActive = travelerAvailability?.active;
+   const travelerUntil = travelerAvailability?.until;
+
+   const handleToggleTraveler = () => {
+      if (!setTravelerAvailability) return;
+      if (isTravelerActive) {
+         setTravelerAvailability({ active: false, until: null });
+      } else {
+         const sevenDaysFromNow = new Date();
+         sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+         setTravelerAvailability({
+            active: true,
+            until: sevenDaysFromNow.toISOString().slice(0, 10),
+         });
+      }
+   };
+
+   const handleTravelerUntilChange = (value) => {
+      if (!setTravelerAvailability) return;
+      setTravelerAvailability({
+         active: true,
+         until: value || null,
+      });
    };
 
    const handleLogout = () => {
@@ -87,15 +116,24 @@ const ProfilePage = () => {
             {/* Time Bank Wallet */}
             <Card className="p-4 flex items-center justify-between border-emerald-200 bg-emerald-50/50 relative overflow-hidden">
                <div className="absolute -right-4 -top-4 w-20 h-20 bg-emerald-100/50 rounded-full blur-xl pointer-events-none" />
-               <div className="flex items-center gap-3 z-10">
+                  <div className="flex items-center gap-3 z-10">
                   <div className="p-2.5 bg-emerald-100 rounded-full text-emerald-600 shadow-sm">
                      <Clock size={20} />
                   </div>
                   <div>
-                     <div className="text-xs text-emerald-700 font-bold uppercase tracking-wide">Time Credits</div>
+                     <button
+                        type="button"
+                        onClick={() => setShowCreditsInfo(true)}
+                        className="text-left text-xs text-emerald-700 font-bold uppercase tracking-wide underline underline-offset-2 decoration-emerald-300 hover:text-emerald-800"
+                     >
+                        Time Credits
+                     </button>
                      <div className="text-xl font-bold text-emerald-900 flex items-baseline gap-1">
                         {profile.credits} <span className="text-sm font-medium text-emerald-700">hrs</span>
                      </div>
+                     <p className="mt-1 text-[10px] text-emerald-800/90 max-w-xs">
+                        Earn 1 hour when you help a neighbor, then spend those hours to ask for help or goods later — no cash needed.
+                     </p>
                   </div>
                </div>
                <button 
@@ -104,6 +142,66 @@ const ProfilePage = () => {
                >
                   Exchange
                </button>
+            </Card>
+
+            {/* Traveler Availability */}
+            <Card className="p-4 flex flex-col gap-3 border-slate-200 bg-white">
+               <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                     <div className="p-2.5 bg-slate-100 rounded-full text-emerald-600">
+                        <ArrowRightLeft size={18} />
+                     </div>
+                     <div>
+                        <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Traveler Mode</div>
+                        <div className="text-sm font-bold text-slate-900">
+                           {isTravelerActive ? "Accepting pasabuy requests" : "Not available as traveler"}
+                        </div>
+                     </div>
+                  </div>
+                  <button
+                     type="button"
+                     onClick={handleToggleTraveler}
+                     className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
+                        isTravelerActive ? "bg-emerald-500 border-emerald-500" : "bg-slate-200 border-slate-200"
+                     }`}
+                  >
+                     <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                           isTravelerActive ? "translate-x-5" : "translate-x-1"
+                        }`}
+                     />
+                  </button>
+               </div>
+
+               {isTravelerActive ? (
+                  <div className="space-y-2">
+                     <div className="flex items-center justify-between gap-2">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                           Available until
+                        </label>
+                        <input
+                           type="date"
+                           value={travelerUntil || ""}
+                           onChange={(e) => handleTravelerUntilChange(e.target.value)}
+                           className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                        />
+                     </div>
+                     <p className="text-[11px] text-slate-500">
+                        You’ll appear in the <span className="font-semibold">Traveler Network</span> until this date or until you toggle this off.
+                     </p>
+                     <button
+                        type="button"
+                        onClick={() => navigate("/explore", { state: { activeTab: "travelers" } })}
+                        className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800"
+                     >
+                        <ArrowUpRight size={12} /> View traveler discovery
+                     </button>
+                  </div>
+               ) : (
+                  <p className="text-[11px] text-slate-500">
+                     Turn this on if you have an upcoming trip and want neighbors to send pasabuy requests.
+                  </p>
+               )}
             </Card>
 
             {/* Active Swaps */}
@@ -265,6 +363,40 @@ const ProfilePage = () => {
                      <ArrowRightLeft size={18} />
                      {exchangeType === 'send' ? 'Transfer Credits' : 'Send Request'}
                   </button>
+               </div>
+            </div>
+         )}
+
+         {/* --- TIME CREDITS INFO MODAL --- */}
+         {showCreditsInfo && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
+               <div
+                  className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+                  onClick={() => setShowCreditsInfo(false)}
+               />
+               <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 animate-in zoom-in-95 duration-200 text-left">
+                  <div className="flex justify-between items-center mb-3">
+                     <h3 className="font-bold text-base text-slate-900">What are Time Credits?</h3>
+                     <button
+                        onClick={() => setShowCreditsInfo(false)}
+                        className="p-1 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+                     >
+                        <X size={18} />
+                     </button>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-3">
+                     Time credits are this community&apos;s way of rewarding swaps without using cash.
+                     For every hour you help someone (tutoring, design help, airport pick-up, pet sitting, etc.),
+                     you earn <span className="font-semibold text-emerald-700">1 hour</span> of time credit.
+                  </p>
+                  <p className="text-sm text-slate-600 mb-3">
+                     You can then spend those hours to request help from others or to top up a swap deal
+                     — for example, adding <span className="font-semibold">2 hrs of coding help</span> on top of a pastry swap.
+                  </p>
+                  <p className="text-xs text-slate-500">
+                     This makes every favor traceable and fair, and nudges the community to keep giving,
+                     because the time you give today becomes help you can claim later.
+                  </p>
                </div>
             </div>
          )}

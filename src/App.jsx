@@ -38,6 +38,10 @@ export default function BitbitApp() {
   const [selectedGO, setSelectedGO] = useState(null);
   const [isPostTripOpen, setIsPostTripOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [travelerAvailability, setTravelerAvailability] = useState({
+    active: false,
+    until: null,
+  });
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -59,11 +63,17 @@ export default function BitbitApp() {
       <main className="max-w-md mx-auto">
         <Routes>
           <Route path="/home" element={<BrowsePage mode={mode} setMode={setMode} setSelectedGO={setSelectedGO} setIsPostTripOpen={setIsPostTripOpen} />} />
-          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/explore" element={<ExplorePage travelerAvailability={travelerAvailability} />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route
             path="/profile"
-            element={<ProfilePage user={CURRENT_USER} />}
+            element={
+              <ProfilePage
+                user={CURRENT_USER}
+                travelerAvailability={travelerAvailability}
+                setTravelerAvailability={setTravelerAvailability}
+              />
+            }
           />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/" element={<WelcomePage />} />
