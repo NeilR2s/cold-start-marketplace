@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { X, TrendingDown, ShieldCheck, CheckCircle } from 'lucide-react';
 import { Card, Badge, Avatar } from './CustomComponents';
 import { formatPHP } from '@/utils';
+import { formatCurrency } from '../utils';
+import { PRICE_BREAKDOWN } from '../data';
 
 
 const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
   if (!selectedGO) return null;
 
-  const [participants, setParticipants] = useState(selectedGO.pooling.current);
+  const [participants, setParticipants] = useState(selectedGO?.pooling?.current || 0);
   const [selectedBias, setSelectedBias] = useState(null);
   const [joined, setJoined] = useState(false);
 
@@ -31,6 +33,10 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
     setParticipants(p => p + 1);
     showToast("Successfully joined Group Order!");
   };
+
+  const totalPrice = formatCurrency(
+    PRICE_BREAKDOWN.basePrice + PRICE_BREAKDOWN.tax + PRICE_BREAKDOWN.hostFee + PRICE_BREAKDOWN.handlingFee
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
@@ -124,6 +130,33 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
                  Your payment is held neutrally. The host only receives funds after items arrive in PH and are ready to ship to you.
                </p>
              </div>
+          </div>
+
+          {/* Price Breakdown */}
+          <div className="p-4 bg-white rounded-lg shadow-sm border border-slate-200">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Price Breakdown</h3>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li className="flex justify-between">
+                <span>Base Price</span>
+                <span>{formatCurrency(PRICE_BREAKDOWN.basePrice)}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Tax</span>
+                <span>{formatCurrency(PRICE_BREAKDOWN.tax)}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Host Fee</span>
+                <span>{formatCurrency(PRICE_BREAKDOWN.hostFee)}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Handling Fee</span>
+                <span>{formatCurrency(PRICE_BREAKDOWN.handlingFee)}</span>
+              </li>
+              <li className="flex justify-between font-bold text-slate-800">
+                <span>Total</span>
+                <span>{totalPrice}</span>
+              </li>
+            </ul>
           </div>
         </div>
 

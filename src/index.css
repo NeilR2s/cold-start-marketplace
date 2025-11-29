@@ -1,5 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap");
 @import "tailwindcss";
+
+body, html, #root {
+  font-family: 'Figtree', 'Google Sans', 'sans-serif';
+}
 
 @layer utilities {
     /* Hide scrollbar for Chrome, Safari and Opera */
@@ -16,7 +21,7 @@
 
 @theme {
     --font-*: initial;
-    --font-sans: "Google Sans", "sans-serif";
-    --font-primary: "Google Sans", "sans-serif";
-    --font-secondary: "Google Sans", "sans-serif";
+    --font-sans: 'Figtree', 'Google Sans', 'sans-serif';
+    --font-primary: 'Figtree', 'Google Sans', 'sans-serif';
+    --font-secondary: 'Figtree', 'Google Sans', 'sans-serif';
 }
