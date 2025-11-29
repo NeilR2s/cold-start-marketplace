@@ -4,11 +4,11 @@ import { Search, Package, Clock, CheckCircle, MoreHorizontal, Star, X } from 'lu
 import { Card as CustomCard, Avatar } from '@/components/CustomComponents';
 import { CURRENT_USER } from '@/data';
 
-const USERS = {
+const getUsers = (user) => ({
   current: {
-    id: CURRENT_USER.uid,
-    name: CURRENT_USER.displayName,
-    avatar: CURRENT_USER.avatar,
+    id: user?.uid || CURRENT_USER.uid,
+    name: user?.displayName || CURRENT_USER.displayName,
+    avatar: user?.avatar || CURRENT_USER.avatar,
   },
   sarah: {
     id: 'u201',
@@ -30,9 +30,11 @@ const USERS = {
     name: 'David K.',
     avatar: 'https://i.pravatar.cc/150?u=4',
   },
-};
+});
 
-const MOCK_TRANSACTIONS = [
+const getMockTransactions = (user) => {
+  const USERS = getUsers(user);
+  return [
   {
     id: "tx_1",
     conversationId: "c1",
@@ -97,9 +99,12 @@ const MOCK_TRANSACTIONS = [
     swapper: USERS.david,
     deadline: "2024-01-15"
   }
-];
+  ];
+};
 
-const OrdersPage = () => {
+const OrdersPage = ({ user }) => {
+  const USERS = getUsers(user);
+  const MOCK_TRANSACTIONS = getMockTransactions(user);
   const navigate = useNavigate();
   const location = useLocation();
   const [travelerTab, setTravelerTab] = useState('ongoing');
@@ -255,8 +260,9 @@ const OrdersPage = () => {
             </div>
           ) : (
             filteredTransactions.map((tx) => {
-              const isHost = tx.host.id === CURRENT_USER.uid;
-              const isSwapper = tx.swapper.id === CURRENT_USER.uid;
+              const currentUserId = user?.uid || CURRENT_USER.uid;
+              const isHost = tx.host.id === currentUserId;
+              const isSwapper = tx.swapper.id === currentUserId;
               const existingRating = savedRatings[tx.id];
               const counterpartyName = isHost ? tx.swapper.name : tx.host.name;
 
@@ -418,7 +424,7 @@ const OrdersPage = () => {
                 <p className="text-xs text-slate-500 mt-0.5">
                   How was your swap experience with{' '}
                   <span className="font-semibold">
-                    {ratingModalTx.host.id === CURRENT_USER.uid ? ratingModalTx.swapper.name : ratingModalTx.host.name}
+                    {ratingModalTx.host.id === (user?.uid || CURRENT_USER.uid) ? ratingModalTx.swapper.name : ratingModalTx.host.name}
                   </span>
                   ?
                 </p>
