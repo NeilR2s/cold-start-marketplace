@@ -1,6 +1,7 @@
 export const CURRENT_USER = {
   uid: "u123",
   displayName: "Clara the Collector",
+  avatar: "https://i.pravatar.cc/150?u=clara",
   roles: ["buyer", "traveler"],
   verificationStatus: "verified",
   reputationScore: 4.8,
