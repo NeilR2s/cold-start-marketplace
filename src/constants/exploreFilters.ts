@@ -1,6 +1,6 @@
-import { TagGroup, BarterType, CategoryName, ExchangeMethod, SortOption, LocationFilter } from "../types/explore";
+import { TagGroup, BarterType, CategoryName, ExchangeMethod, SwapSortOption, LocationFilter } from "../types/explore";
 
-export const SORT_OPTIONS: SortOption[] = ["Best Match", "Most Recent", "Most Popular", "Nearest First"];
+export const SWAP_SORT_OPTIONS: SwapSortOption[] = ["Best Match", "Most Recent", "Most Popular", "Nearest First"];
 
 export const BARTER_TYPES: BarterType[] = ["1:1 Swap", "1-to-Many Swap", "Group Swap"];
 

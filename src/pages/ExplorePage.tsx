@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, LayoutGrid, Rows3 } from "lucide-react";
 import { SortDropdown } from "../components/explore/SortDropdown";
 import { FilterPills } from "../components/explore/FilterPills";
@@ -6,15 +7,19 @@ import { FilterDrawer } from "../components/explore/FilterDrawer";
 import { SwapGrid } from "../components/explore/SwapGrid";
 import { SWAP_LISTINGS } from "../data/swapListings";
 import { buildFilterPills, defaultFilters, filterListings, sortListings } from "../utils/exploreFilters";
-import { FilterState, SortOption } from "../types/explore";
+import { FilterState, SwapSortOption } from "../types/explore";
+import { SWAP_SORT_OPTIONS } from "../constants/exploreFilters";
+import { TravelerPage } from "../components/travelers/TravelerPage";
 
 const INITIAL_VISIBLE = 4;  
 
 const ExplorePage = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const [activeTab, setActiveTab] = useState<"swaps" | "travelers">("swaps");
 
   const filteredListings = useMemo(() => filterListings(SWAP_LISTINGS, filters), [filters]);
   const sortedListings = useMemo(() => sortListings(filteredListings, filters.sort), [filteredListings, filters.sort]);
@@ -28,7 +33,7 @@ const ExplorePage = () => {
     setFilters(next);
   };
 
-  const handleSortChange = (value: SortOption) => updateFilters({ ...filters, sort: value });
+  const handleSortChange = (value: SwapSortOption) => updateFilters({ ...filters, sort: value });
 
   const handlePillRemove = (key: string) => {
     if (key === "query") {
@@ -68,14 +73,25 @@ const ExplorePage = () => {
 
   const handleSearchChange = (value: string) => updateFilters({ ...filters, query: value });
 
-  return (
-    <div className="space-y-5 pb-24 pt-6">
-      <header className="space-y-4 px-4">
-        <div>
-          <p className="text-xs font-semibold uppercase text-emerald-600">Explore Swaps</p>
-          <h1 className="text-2xl font-black text-slate-900">Trade stories, not cash.</h1>
-          <p className="text-sm text-slate-500">Browse curated barter listings powered by the Bitbit community.</p>
-        </div>
+  const handleChatHost = (listing: typeof SWAP_LISTINGS[number]) => {
+    const conversationId = listing.conversationId || "swap-chat-sarah";
+    navigate("/messages", {
+      state: {
+        conversationId,
+        chatType: "host",
+        productTag: listing.id,
+      },
+    });
+  };
+
+  const renderSwapView = () => (
+    <div className="space-y-5 pt-2">
+      <header className="space-y-3 px-4">
+        <p className="text-xs font-semibold uppercase text-emerald-600">Swap marketplace</p>
+        <h2 className="text-xl font-bold text-slate-900">Discover active barter-only listings.</h2>
+        <p className="text-sm text-slate-500">
+          Filter by barter type, kapalit, exchange method, and tags to find your next swap.
+        </p>
 
         <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
           <Search className="h-5 w-5 text-slate-400" />
@@ -90,7 +106,12 @@ const ExplorePage = () => {
 
       <section className="space-y-4 px-4">
         <div className="flex flex-col gap-3">
-          <SortDropdown value={filters.sort} onChange={handleSortChange} onOpenFilters={() => setDrawerOpen(true)} />
+          <SortDropdown
+            value={filters.sort}
+            options={SWAP_SORT_OPTIONS}
+            onChange={handleSortChange}
+            onOpenFilters={() => setDrawerOpen(true)}
+          />
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -120,6 +141,7 @@ const ExplorePage = () => {
           layout={layout}
           onLoadMore={() => setVisibleCount((prev) => prev + 4)}
           hasMore={hasMore}
+          onChatHost={handleChatHost}
         />
       </section>
 
@@ -130,6 +152,36 @@ const ExplorePage = () => {
         onClose={() => setDrawerOpen(false)}
         onReset={() => updateFilters(defaultFilters)}
       />
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 pb-24 pt-6">
+      <section className="space-y-4 px-4">
+        <div>
+          <p className="text-xs font-semibold uppercase text-emerald-600">Explore Bitbit</p>
+          <h1 className="text-2xl font-black text-slate-900">Choose your swap adventure.</h1>
+          <p className="text-sm text-slate-500">Toggle between curated swap listings and the traveler network.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 rounded-full bg-slate-100 p-1 text-sm font-semibold">
+          <button
+            type="button"
+            className={`rounded-full px-4 py-2 ${activeTab === "swaps" ? "bg-white text-slate-900 shadow" : "text-slate-500"}`}
+            onClick={() => setActiveTab("swaps")}
+          >
+            Swap marketplace
+          </button>
+          <button
+            type="button"
+            className={`rounded-full px-4 py-2 ${activeTab === "travelers" ? "bg-white text-slate-900 shadow" : "text-slate-500"}`}
+            onClick={() => setActiveTab("travelers")}
+          >
+            Traveler network
+          </button>
+        </div>
+      </section>
+
+      {activeTab === "swaps" ? renderSwapView() : <TravelerPage />}
     </div>
   );
 };

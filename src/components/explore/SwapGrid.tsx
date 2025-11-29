@@ -6,9 +6,10 @@ type SwapGridProps = {
   layout: "grid" | "list";
   onLoadMore: () => void;
   hasMore: boolean;
+  onChatHost?: (listing: SwapListing) => void;
 };
 
-export function SwapGrid({ listings, layout, onLoadMore, hasMore }: SwapGridProps) {
+export function SwapGrid({ listings, layout, onLoadMore, hasMore, onChatHost }: SwapGridProps) {
   if (listings.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-500">
@@ -21,7 +22,12 @@ export function SwapGrid({ listings, layout, onLoadMore, hasMore }: SwapGridProp
     <div className="space-y-6">
       <div className={layout === "grid" ? "grid gap-4 sm:grid-cols-2" : "flex flex-col gap-4"}>
         {listings.map((listing) => (
-          <SwapCard key={listing.id} listing={listing} layout={layout} />
+          <SwapCard
+            key={listing.id}
+            listing={listing}
+            layout={layout}
+            onChatHost={onChatHost}
+          />
         ))}
       </div>
 
@@ -37,4 +43,5 @@ export function SwapGrid({ listings, layout, onLoadMore, hasMore }: SwapGridProp
     </div>
   );
 }
+
 

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Package, Clock, CheckCircle, MoreHorizontal } from 'lucide-react';
 import { Card as CustomCard, Avatar } from '@/components/CustomComponents';
 import { CURRENT_USER } from '@/data';
@@ -34,6 +35,7 @@ const USERS = {
 const MOCK_TRANSACTIONS = [
   {
     id: "tx_1",
+    conversationId: "c1",
     status: "ongoing",
     step: "Coordinating Swap",
     product: {
@@ -49,6 +51,7 @@ const MOCK_TRANSACTIONS = [
   },
   {
     id: "tx_2",
+    conversationId: "c2",
     status: "ongoing",
     step: "In Transit to Meet-up",
     product: {
@@ -64,6 +67,7 @@ const MOCK_TRANSACTIONS = [
   },
   {
     id: "tx_3",
+    conversationId: "c1",
     status: "past",
     step: "Swap Completed",
     product: {
@@ -79,6 +83,7 @@ const MOCK_TRANSACTIONS = [
   },
   {
     id: "tx_4",
+    conversationId: "c2",
     status: "past",
     step: "Swap Cancelled",
     product: {
@@ -95,6 +100,7 @@ const MOCK_TRANSACTIONS = [
 ];
 
 const OrdersPage = () => {
+  const navigate = useNavigate();
   const [travelerTab, setTravelerTab] = useState('ongoing');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -255,13 +261,29 @@ const OrdersPage = () => {
                       >
                         {isHost ? 'Update Status' : isSwapper ? 'View Status' : 'View Details'}
                       </button>
-                      <button className="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors">
+                      <button
+                        className="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors"
+                        onClick={() => {
+                          const conversationId = tx.conversationId || "c1";
+                          navigate("/messages", {
+                            state: { conversationId, chatType: "pasabuy" },
+                          });
+                        }}
+                      >
                         Chat
                       </button>
                     </div>
                   ) : (
                     <div className="px-4 py-3 border-t border-slate-100 flex gap-2">
-                      <button className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors">
+                      <button
+                        className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors"
+                        onClick={() => {
+                          const conversationId = tx.conversationId || "c2";
+                          navigate("/messages", {
+                            state: { conversationId, chatType: "pasabuy" },
+                          });
+                        }}
+                      >
                         Chat
                       </button>
                       <button className="flex-1 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors">

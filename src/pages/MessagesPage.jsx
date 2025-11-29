@@ -10,12 +10,25 @@ import {
   CheckCheck,
   Image as ImageIcon,
 } from "lucide-react";
-import { Card, Avatar, Badge } from "@/components/CustomComponents";
+import { Card, Avatar } from "@/components/CustomComponents";
+
+const CHANNEL_LABELS = {
+  pasabuy: "Pasabuy",
+  traveler: "Traveler Swap",
+  host: "Swap Host",
+};
+
+const CHANNEL_STYLES = {
+  pasabuy: "bg-purple-50 border-purple-100 text-purple-700",
+  traveler: "bg-emerald-50 border-emerald-100 text-emerald-700",
+  host: "bg-blue-50 border-blue-100 text-blue-700",
+};
 
 // Mock Data for Conversations
 const MOCK_CONVERSATIONS = [
   {
     id: "c1",
+    channel: "pasabuy",
     partner: { name: "Miguel Travels", verified: true, status: "online" },
     lastMessage: "I'm at Don Quijote now, sending pics of the matcha kit kats!",
     timestamp: "2m ago",
@@ -57,6 +70,7 @@ const MOCK_CONVERSATIONS = [
   },
   {
     id: "c2",
+    channel: "pasabuy",
     partner: { name: "Sarah FA", verified: true, status: "offline" },
     lastMessage: "Payment received via Escrow. I will ship this on Monday.",
     timestamp: "1d ago",
@@ -79,24 +93,134 @@ const MOCK_CONVERSATIONS = [
     ],
   },
   {
-    id: "c3",
-    partner: { name: "John Doe", verified: false, status: "online" },
-    lastMessage: "Is the IKEA chair still available for pasabuy?",
-    timestamp: "3h ago",
-    unread: 1,
-    type: "selling", // User is the Pasabuyer/Traveler
-    context: { label: "IKEA Batch 24", status: "Inquiry" },
+    id: "trav-chat-miguel",
+    channel: "traveler",
+    partner: { name: "Miguel R.", verified: true, status: "online" },
+    lastMessage: "I can grab the Switch OLED today—still want the neon one?",
+    timestamp: "Just now",
+    unread: 0,
+    type: "traveler",
+    context: { label: "Traveler Swap", status: "Active", route: "NRT ➝ MNL" },
     messages: [
       {
         id: 1,
+        sender: "me",
+        text: "Hi Miguel! Can you bitbit a Switch OLED for a keyboard kit swap?",
+        time: "10:03 AM",
+      },
+      {
+        id: 2,
         sender: "them",
-        text: "Hi! Is the IKEA chair still available for pasabuy?",
-        time: "3:00 PM",
+        text: "I can grab one later. Need it in neon or white?",
+        time: "10:05 AM",
+      },
+      {
+        id: 3,
+        sender: "me",
+        text: "Neon please! I can add Sagada beans to the kapalit bundle.",
+        time: "10:07 AM",
       },
     ],
   },
   {
-    id: "c4",
+    id: "trav-chat-angela",
+    channel: "traveler",
+    partner: { name: "Angela K.", verified: true, status: "online" },
+    lastMessage: "Laneige sets back in stock—locking your slot.",
+    timestamp: "8m ago",
+    unread: 1,
+    type: "traveler",
+    context: { label: "Traveler Swap", status: "Confirming", route: "ICN ➝ CEB" },
+    messages: [
+      {
+        id: 1,
+        sender: "me",
+        text: "Hi Angela! Still open for Laneige + Gentle Monster request?",
+        time: "9:15 AM",
+      },
+      {
+        id: 2,
+        sender: "them",
+        text: "Yes! Laneige restocked. Gentle Monster might need preorder though.",
+        time: "9:18 AM",
+      },
+    ],
+  },
+  {
+    id: "trav-chat-omar",
+    channel: "traveler",
+    partner: { name: "Omar D.", verified: true, status: "offline" },
+    lastMessage: "Send your kapalit list so I can finalize before flying.",
+    timestamp: "1h ago",
+    unread: 0,
+    type: "traveler",
+    context: { label: "Traveler Swap", status: "Packing", route: "DXB ➝ MNL ➝ DVO" },
+    messages: [
+      {
+        id: 1,
+        sender: "me",
+        text: "Need IKEA organizers + Bateel dates. Kapalit would be smart home plugs.",
+        time: "8:05 AM",
+      },
+      {
+        id: 2,
+        sender: "them",
+        text: "Copy! Send kapalit list before I check in luggage.",
+        time: "8:40 AM",
+      },
+    ],
+  },
+  {
+    id: "trav-chat-sari",
+    channel: "traveler",
+    partner: { name: "Sari Express Crew", verified: true, status: "online" },
+    lastMessage: "Bulk pickup window is 3-4PM daily at T3 curbside.",
+    timestamp: "20m ago",
+    unread: 3,
+    type: "traveler",
+    context: { label: "Traveler Swap", status: "Dispatching", route: "NAIA loop" },
+    messages: [
+      {
+        id: 1,
+        sender: "me",
+        text: "Can you grab 5 balikbayan boxes + snacks this afternoon?",
+        time: "7:55 AM",
+      },
+      {
+        id: 2,
+        sender: "them",
+        text: "Yes, drop kapalit offers in thread by lunch.",
+        time: "8:10 AM",
+      },
+    ],
+  },
+  {
+    id: "trav-chat-lena",
+    channel: "traveler",
+    partner: { name: "Lena V.", verified: false, status: "online" },
+    lastMessage: "Keychron restocked! Want me to reserve one?",
+    timestamp: "45m ago",
+    unread: 0,
+    type: "traveler",
+    context: { label: "Traveler Swap", status: "Sourcing", route: "SFO ➝ LAX ➝ MNL" },
+    messages: [
+      {
+        id: 1,
+        sender: "me",
+        text: "Need Keychron switches + record sleeves. Can swap handmade totes.",
+        time: "7:30 AM",
+      },
+      {
+        id: 2,
+        sender: "them",
+        text: "Keychron restocked! Want me to reserve one?",
+        time: "7:45 AM",
+      },
+    ],
+  },
+  {
+    id: "swap-chat-sarah",
+    channel: "host",
     partner: { name: "Sarah J.", verified: true, status: "online" },
     lastMessage: "Post your pastry bundle offer so I can lock the slot.",
     timestamp: "5m ago",
@@ -124,34 +248,88 @@ const MOCK_CONVERSATIONS = [
       },
     ],
   },
+  {
+    id: "swap-chat-mike",
+    channel: "host",
+    partner: { name: "Mike T.", verified: true, status: "offline" },
+    lastMessage: "Meetup still at Greenbelt, Saturday 4PM?",
+    timestamp: "2h ago",
+    unread: 0,
+    type: "buying",
+    context: { label: "Swap Thread", status: "Negotiating", productTag: "gentle-monster", productName: "Gentle Monster Sunglasses (Rick 01)" },
+    messages: [
+      {
+        id: 1,
+        sender: "me",
+        text: "Can throw in 2hrs styling services for the Rick 01 frame.",
+        time: "2h ago",
+      },
+      {
+        id: 2,
+        sender: "them",
+        text: "Noted. Meetup still Greenbelt Saturday 4PM?",
+        time: "2h ago",
+      },
+    ],
+  },
+];
+
+const TAB_OPTIONS = [
+  { id: "all", label: "All Chats" },
+  { id: "traveler", label: "Traveler" },
+  { id: "pasabuy", label: "Pasabuy" },
+  { id: "host", label: "Swap Hosts" },
 ];
 
 const MessagesPage = () => {
   const [activeChatId, setActiveChatId] = useState(null);
-  const [activeTab, setActiveTab] = useState("all"); // 'all', 'buying', 'selling'
+  const [activeTab, setActiveTab] = useState("all");
   const location = useLocation();
   const [highlightedProductTag, setHighlightedProductTag] = useState(
     location.state?.productTag || null
   );
 
   useEffect(() => {
-    const tag = location.state?.productTag;
-    if (!tag) return;
-    const linkedConversation = MOCK_CONVERSATIONS.find(
-      (conversation) => conversation.context?.productTag === tag
-    );
-    if (linkedConversation) {
-      setActiveChatId(linkedConversation.id);
-      setHighlightedProductTag(tag);
+    const { conversationId, chatType, productTag, linkedTag } = location.state ?? {};
+
+    if (productTag) {
+      setHighlightedProductTag(productTag);
+    }
+
+    if (conversationId) {
+      const linkedConversation = MOCK_CONVERSATIONS.find((chat) => chat.id === conversationId);
+      if (linkedConversation) {
+        setTimeout(() => {
+          setActiveChatId(linkedConversation.id);
+          setActiveTab(chatType ?? linkedConversation.channel ?? "all");
+        }, 0);
+      }
+      return;
+    }
+
+    if (linkedTag) {
+      const linkedByTag = MOCK_CONVERSATIONS.find((chat) => chat.context?.label === linkedTag);
+      if (linkedByTag) {
+        setTimeout(() => {
+          setActiveChatId(linkedByTag.id);
+          setActiveTab(chatType ?? linkedByTag.channel ?? "all");
+          setHighlightedProductTag(linkedTag);
+        }, 0);
+      }
+      return;
+    }
+
+    if (chatType && chatType !== "all") {
+      setActiveTab(chatType);
     }
   }, [location]);
 
   const activeChat = MOCK_CONVERSATIONS.find((c) => c.id === activeChatId);
 
   // Filter conversations
-  const filteredConversations = MOCK_CONVERSATIONS.filter((c) => {
+  const filteredConversations = MOCK_CONVERSATIONS.filter((chat) => {
     if (activeTab === "all") return true;
-    return c.type === activeTab;
+    return chat.channel === activeTab;
   });
 
   // Render the Main List
@@ -181,21 +359,17 @@ const MessagesPage = () => {
           </div>
 
           <div className="flex p-1 bg-slate-200/50 rounded-xl">
-            {["all", "buying", "selling"].map((tab) => (
+            {TAB_OPTIONS.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 text-xs font-bold capitalize rounded-lg transition-all ${
-                  activeTab === tab
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === tab.id
                     ? "bg-white text-emerald-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                {tab === "buying"
-                  ? "Purchases"
-                  : tab === "selling"
-                  ? "My Trips"
-                  : "All Chats"}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -231,10 +405,15 @@ const MessagesPage = () => {
                 </div>
 
                 {/* Context Badge */}
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
                     {chat.context.label}
                   </span>
+                  {chat.channel && (
+                    <span className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CHANNEL_STYLES[chat.channel]}`}>
+                      {CHANNEL_LABELS[chat.channel]}
+                    </span>
+                  )}
                   {chat.context.productName && (
                     <span className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-[10px] font-semibold text-emerald-700 truncate max-w-[120px]">
                       #{chat.context.productName}
@@ -243,11 +422,6 @@ const MessagesPage = () => {
                   {highlightedProductTag === chat.context.productTag && (
                     <span className="text-[10px] text-emerald-600 font-semibold">
                       From listing
-                    </span>
-                  )}
-                  {chat.type === "buying" && (
-                    <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-0.5">
-                      <ShieldCheck size={10} /> Escrow Active
                     </span>
                   )}
                 </div>
@@ -301,6 +475,11 @@ const MessagesPage = () => {
               <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
                 {activeChat.context.label} • {activeChat.context.status}
               </div>
+              {activeChat.channel && (
+                <div className={`mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${CHANNEL_STYLES[activeChat.channel]}`}>
+                  {CHANNEL_LABELS[activeChat.channel]}
+                </div>
+              )}
             {activeChat.context.productName && (
               <div className="text-[10px] text-slate-500 font-semibold">
                 #{activeChat.context.productName}
@@ -314,13 +493,11 @@ const MessagesPage = () => {
         </button>
       </div>
 
-      {/* Trust Safety Banner */}
-      <div className="bg-blue-50 border-b border-blue-100 p-2 text-center">
-        <p className="text-[10px] text-blue-700 flex items-center justify-center gap-1">
-          <ShieldCheck size={12} />
-          <span>
-            Payments are held in <b>Bitbit Escrow</b> until item receipt.
-          </span>
+      {/* Safety Reminder */}
+      <div className="bg-slate-100 border-b border-slate-200 p-2 text-center">
+        <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1">
+          <ShieldCheck size={12} className="text-emerald-500" />
+          <span>Keep barter details inside Bitbit chat and report suspicious offers.</span>
         </p>
       </div>
 

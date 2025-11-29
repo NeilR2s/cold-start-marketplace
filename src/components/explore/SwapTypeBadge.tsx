@@ -14,3 +14,4 @@ export function SwapTypeBadge({ type }: SwapTypeBadgeProps) {
   return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeStyles[type]}`}>{type}</span>;
 }
 
+

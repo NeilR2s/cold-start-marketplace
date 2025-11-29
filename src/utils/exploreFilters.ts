@@ -1,4 +1,4 @@
-import { FilterState, SortOption, SwapListing, TagCategory } from "../types/explore";
+import { FilterState, SwapSortOption, SwapListing, TagCategory } from "../types/explore";
 
 const normalize = (value: string) => value.toLowerCase();
 
@@ -64,7 +64,7 @@ const timeToMinutes = (label: string) => {
   return value * 60 * 24;
 };
 
-export const sortListings = (listings: SwapListing[], sort: SortOption) => {
+export const sortListings = (listings: SwapListing[], sort: SwapSortOption) => {
   const sorted = [...listings];
   switch (sort) {
     case "Most Recent":

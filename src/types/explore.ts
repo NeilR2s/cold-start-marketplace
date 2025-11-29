@@ -1,4 +1,4 @@
-export type SortOption = "Best Match" | "Most Recent" | "Most Popular" | "Nearest First";
+export type SwapSortOption = "Best Match" | "Most Recent" | "Most Popular" | "Nearest First";
 
 export type BarterType = "1:1 Swap" | "1-to-Many Swap" | "Group Swap";
 
@@ -75,6 +75,8 @@ export interface SwapListing {
   title: string;
   subtitle: string;
   barterType: BarterType;
+  // Optional: when present, allows "Chat Host" CTAs to deep-link into a sample conversation
+  conversationId?: string;
   category: CategoryName;
   exchangeMethods: ExchangeMethod[];
   locationLabel: string;
@@ -94,7 +96,7 @@ export interface SwapListing {
 }
 
 export interface FilterState {
-  sort: SortOption;
+  sort: SwapSortOption;
   barterTypes: BarterType[];
   categories: CategoryName[];
   exchangeMethods: ExchangeMethod[];

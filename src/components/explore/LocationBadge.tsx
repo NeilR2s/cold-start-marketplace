@@ -20,3 +20,4 @@ export function LocationBadge({ label, distanceKm, routeOrigin, filter }: Locati
   );
 }
 
+
