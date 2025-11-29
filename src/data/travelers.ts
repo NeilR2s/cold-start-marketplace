@@ -3,6 +3,7 @@ import { TravelerProfile } from "../types/travelers";
 export const TRAVELERS: TravelerProfile[] = [
   {
     id: "trav-001",
+    conversationId: "trav-chat-miguel",
     name: "Miguel R.",
     avatar: "https://i.pravatar.cc/150?u=tokyo-bitbit",
     verified: true,
@@ -46,6 +47,7 @@ export const TRAVELERS: TravelerProfile[] = [
   },
   {
     id: "trav-002",
+    conversationId: "trav-chat-angela",
     name: "Angela K.",
     avatar: "https://i.pravatar.cc/150?u=seoul-kbeauty",
     verified: true,
@@ -86,6 +88,7 @@ export const TRAVELERS: TravelerProfile[] = [
   },
   {
     id: "trav-003",
+    conversationId: "trav-chat-omar",
     name: "Omar D.",
     avatar: "https://i.pravatar.cc/150?u=dubai-dates",
     verified: true,
@@ -127,6 +130,7 @@ export const TRAVELERS: TravelerProfile[] = [
   },
   {
     id: "trav-004",
+    conversationId: "trav-chat-sari",
     name: "Sari Express Crew",
     avatar: "https://i.pravatar.cc/150?u=group-host",
     verified: true,
@@ -167,6 +171,7 @@ export const TRAVELERS: TravelerProfile[] = [
   },
   {
     id: "trav-005",
+    conversationId: "trav-chat-lena",
     name: "Lena V.",
     avatar: "https://i.pravatar.cc/150?u=us-west",
     verified: false,

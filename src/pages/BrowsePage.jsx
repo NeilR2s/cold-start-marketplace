@@ -17,6 +17,7 @@ import { TRAVELERS } from "../data/travelers";
 const MOCK_PRODUCTS = [
   {
     id: 1,
+    conversationId: "swap-chat-sarah",
     tag: "sakura-tumbler",
     title: "Limited Starbucks Sakura Tumbler 2024",
     description: "Japan Exclusive 2024 Spring Collection. Double-walled stainless steel. Keeps drinks hot/cold for 6 hours. Includes box and shop bag.",
@@ -53,6 +54,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: 2,
+    conversationId: "swap-chat-mike",
     tag: "gentle-monster",
     title: "Gentle Monster Sunglasses (Rick 01)",
     description: "Buying strictly from the flagship store in Haus Dosan. Comes with official warranty card and white packaging.",
@@ -158,7 +160,7 @@ const getBidStatusBadge = (status = 'pending') => BID_STATUS_META[status] || BID
 
 // --- MODAL COMPONENTS ---
 
-const ProductDetailModal = ({ product, onClose }) => {
+const ProductDetailModal = ({ product, onClose, onMessageHost }) => {
   if (!product) return null;
 
   const isGroupOrder = product.swapType === 'Group Order';
@@ -292,7 +294,18 @@ const ProductDetailModal = ({ product, onClose }) => {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-100 bg-white mt-auto">
+        <div className="p-4 border-t border-slate-100 bg-white mt-auto space-y-2">
+          <button
+            className={`w-full py-3 rounded-xl font-bold transition-all ${
+              product?.conversationId
+                ? "border border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
+                : "border border-slate-100 text-slate-400 cursor-not-allowed bg-slate-50"
+            }`}
+            onClick={() => onMessageHost?.(product)}
+            disabled={!product?.conversationId}
+          >
+            Message Host
+          </button>
           <button className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
             {isGroupOrder ? "Join Group Order" : isPasabuy ? "Request to Buy" : "Buy Now"}
           </button>
@@ -302,7 +315,7 @@ const ProductDetailModal = ({ product, onClose }) => {
   );
 };
 
-const TravelerDetailModal = ({ traveler, onClose }) => {
+const TravelerDetailModal = ({ traveler, onClose, onMessage }) => {
   if (!traveler) return null;
 
   return (
@@ -413,7 +426,15 @@ const TravelerDetailModal = ({ traveler, onClose }) => {
         </div>
 
         <div className="p-4 border-t border-slate-100 bg-white">
-          <button className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]">
+          <button
+            className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] ${
+              traveler?.conversationId
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                : "bg-slate-200 text-slate-500 cursor-not-allowed shadow-transparent"
+            }`}
+            onClick={() => onMessage?.(traveler)}
+            disabled={!traveler?.conversationId}
+          >
             Message Traveler
           </button>
         </div>
@@ -446,6 +467,32 @@ function BrowsePage() {
   const PRODUCT_TYPES = ["All", "Food", "Fashion", "Beauty", "Gadgets", "Home"];
 
   // Derived filtered data
+  const handleMessageTraveler = async (traveler) => {
+    if (!traveler?.conversationId) return;
+    const template = traveler.messageTemplates?.[0];
+    if (template && navigator?.clipboard) {
+      try {
+        await navigator.clipboard.writeText(template);
+      } catch (error) {
+        console.warn("Clipboard unavailable", error);
+      }
+    }
+    setSelectedTraveler(null);
+    navigate("/messages", { state: { conversationId: traveler.conversationId, chatType: "traveler" } });
+  };
+
+  const handleMessageHost = (product) => {
+    if (!product?.conversationId) return;
+    setSelectedProduct(null);
+    navigate("/messages", {
+      state: {
+        conversationId: product.conversationId,
+        chatType: "host",
+        productTag: product.tag,
+      },
+    });
+  };
+
   const filteredProducts = useMemo(() => {
     return MOCK_PRODUCTS.filter(item => {
       // Search Logic
@@ -474,8 +521,9 @@ function BrowsePage() {
       <ProductDetailModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
+        onMessageHost={handleMessageHost}
       />
-      <TravelerDetailModal traveler={selectedTraveler} onClose={() => setSelectedTraveler(null)} />
+      <TravelerDetailModal traveler={selectedTraveler} onClose={() => setSelectedTraveler(null)} onMessage={handleMessageTraveler} />
 
       {/* --- HEADER SECTION --- */}
       <div className="px-4 pt-6 pb-2 sticky top-0 z-40 bg-slate-50/95 backdrop-blur-sm">

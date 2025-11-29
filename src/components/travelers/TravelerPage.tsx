@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LayoutGrid, Rows3, Sparkles, ClipboardCheck, X } from "lucide-react";
 import { SortDropdown } from "../explore/SortDropdown";
 import { TravelerFilterDrawer } from "./TravelerFilterDrawer";
@@ -18,6 +19,7 @@ export function TravelerPage() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [selectedTraveler, setSelectedTraveler] = useState<TravelerProfile | null>(null);
   const [chatToast, setChatToast] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const filtered = useMemo(() => filterTravelers(TRAVELERS, filters), [filters]);
   const sorted = useMemo(() => sortTravelers(filtered, filters.sort), [filtered, filters.sort]);
@@ -79,6 +81,7 @@ export function TravelerPage() {
       setChatToast("Template ready. Paste it inside chat!");
     }
     setTimeout(() => setChatToast(null), 2500);
+    navigate("/messages", { state: { conversationId: traveler.conversationId, chatType: "traveler" } });
   };
 
   return (
@@ -240,7 +243,10 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
                 <button
                   key={index}
                   type="button"
-                  onClick={() => onMessage(traveler)}
+                  onClick={() => {
+                    onMessage(traveler);
+                    onClose();
+                  }}
                   className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:border-emerald-300"
                 >
                   <span className="inline-flex items-center gap-2 text-xs uppercase text-slate-400">
@@ -257,7 +263,10 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
           <button
             type="button"
             className="w-full rounded-full bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
-            onClick={() => onMessage(traveler)}
+            onClick={() => {
+              onMessage(traveler);
+              onClose();
+            }}
           >
             Copy message & open chat
           </button>

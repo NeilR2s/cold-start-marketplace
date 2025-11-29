@@ -46,6 +46,7 @@ export interface TravelerRestrictions {
 
 export interface TravelerProfile {
   id: string;
+  conversationId: string;
   name: string;
   avatar: string;
   verified: boolean;

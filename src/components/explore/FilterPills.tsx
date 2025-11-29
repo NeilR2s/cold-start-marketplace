@@ -32,3 +32,4 @@ export function FilterPills({ pills, onRemove, onClearAll }: FilterPillsProps) {
   );
 }
 
+

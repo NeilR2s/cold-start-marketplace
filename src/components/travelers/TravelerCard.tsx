@@ -184,7 +184,10 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
               event.stopPropagation();
               onMessage?.(traveler);
             }}
-            className="flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 font-semibold text-white transition hover:bg-emerald-600"
+            disabled={!traveler.conversationId}
+            className={`flex items-center justify-center gap-2 rounded-full px-4 py-2 font-semibold transition ${
+              traveler.conversationId ? "bg-emerald-500 text-white hover:bg-emerald-600" : "bg-slate-200 text-slate-500 cursor-not-allowed"
+            }`}
           >
             <MessageCircle className="h-4 w-4" />
             Message Traveler
