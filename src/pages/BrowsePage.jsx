@@ -440,7 +440,7 @@ const TravelerDetailModal = ({ traveler, onClose, onMessage }) => {
 
 // --- MAIN PAGE COMPONENT ---
 
-function BrowsePage() {
+function BrowsePage({ setIsPostTripOpen }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -589,24 +589,28 @@ function BrowsePage() {
               Swap items, <br /> skip the cash
             </h1>
 
-            <p className="text-emerald-100/90 text-sm mb-6 font-medium max-w-[260px] leading-relaxed">
+            <p className="text-emerald-100/90 text-sm mb-5 font-medium max-w-[260px] leading-relaxed">
               Trade albums, gadgets, food, and more with your community.
             </p>
 
-            {/* TOGGLE: Seeking vs Offering */}
-            <div className="flex p-1 bg-white/10 rounded-lg w-fit backdrop-blur-md border border-white/10">
-              {/* <button
-                onClick={() => setMode('seeking')}
-                className={`flex items-center gap-2 px-5 py-2 rounded-md text-[12px] font-bold transition-all duration-300 ${mode === 'seeking' ? 'bg-white text-emerald-800 shadow-lg scale-100' : 'text-emerald-50 hover:bg-white/5'}`}
+            {/* Primary actions: browse vs host a pasabuy */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button
+                type="button"
+                onClick={() => navigate('/explore')}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-emerald-900 shadow-md shadow-emerald-900/20 hover:bg-emerald-50 transition-colors"
               >
-                Buyer
+                <ArrowLeftRight size={14} className="text-emerald-700" />
+                Browse Swaps
               </button>
               <button
-                onClick={() => setMode('offering')}
-                className={`flex items-center gap-2 px-5 py-2 rounded-md text-[12px] font-bold transition-all duration-300 ${mode === 'offering' ? 'bg-emerald-500 text-white shadow-lg scale-100' : 'text-emerald-50 hover:bg-white/5'}`}
+                type="button"
+                onClick={() => setIsPostTripOpen?.(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white shadow-md shadow-emerald-900/30 hover:bg-emerald-500 transition-colors"
               >
-                <span>I can help</span>
-              </button> */}
+                <Plus size={14} />
+                Host a Pasabuy
+              </button>
             </div>
           </div>
         </div>
