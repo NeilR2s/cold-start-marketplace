@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Search,
   Send,
@@ -10,7 +11,6 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { Card, Avatar, Badge } from "@/components/CustomComponents";
-import { formatPHP } from "@/utils";
 
 // Mock Data for Conversations
 const MOCK_CONVERSATIONS = [
@@ -95,11 +95,56 @@ const MOCK_CONVERSATIONS = [
       },
     ],
   },
+  {
+    id: "c4",
+    partner: { name: "Sarah J.", verified: true, status: "online" },
+    lastMessage: "Post your pastry bundle offer so I can lock the slot.",
+    timestamp: "5m ago",
+    unread: 1,
+    type: "buying",
+    context: { label: "Swap Thread", status: "Bidding", productTag: "sakura-tumbler", productName: "Limited Starbucks Sakura Tumbler 2024" },
+    messages: [
+      {
+        id: 1,
+        sender: "them",
+        text: "Hi! Saw your bid for brownies + service hour. Please comment on the listing so others can see.",
+        time: "4:40 PM",
+      },
+      {
+        id: 2,
+        sender: "me",
+        text: "Done! Added details + meetup availability.",
+        time: "4:42 PM",
+      },
+      {
+        id: 3,
+        sender: "them",
+        text: "Great. I tagged you on the comments—once we hit 15 slots I'll confirm here.",
+        time: "Now",
+      },
+    ],
+  },
 ];
 
 const MessagesPage = () => {
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeTab, setActiveTab] = useState("all"); // 'all', 'buying', 'selling'
+  const location = useLocation();
+  const [highlightedProductTag, setHighlightedProductTag] = useState(
+    location.state?.productTag || null
+  );
+
+  useEffect(() => {
+    const tag = location.state?.productTag;
+    if (!tag) return;
+    const linkedConversation = MOCK_CONVERSATIONS.find(
+      (conversation) => conversation.context?.productTag === tag
+    );
+    if (linkedConversation) {
+      setActiveChatId(linkedConversation.id);
+      setHighlightedProductTag(tag);
+    }
+  }, [location]);
 
   const activeChat = MOCK_CONVERSATIONS.find((c) => c.id === activeChatId);
 
@@ -190,6 +235,16 @@ const MessagesPage = () => {
                   <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
                     {chat.context.label}
                   </span>
+                  {chat.context.productName && (
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-[10px] font-semibold text-emerald-700 truncate max-w-[120px]">
+                      #{chat.context.productName}
+                    </span>
+                  )}
+                  {highlightedProductTag === chat.context.productTag && (
+                    <span className="text-[10px] text-emerald-600 font-semibold">
+                      From listing
+                    </span>
+                  )}
                   {chat.type === "buying" && (
                     <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-0.5">
                       <ShieldCheck size={10} /> Escrow Active
@@ -246,6 +301,11 @@ const MessagesPage = () => {
               <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
                 {activeChat.context.label} • {activeChat.context.status}
               </div>
+            {activeChat.context.productName && (
+              <div className="text-[10px] text-slate-500 font-semibold">
+                #{activeChat.context.productName}
+              </div>
+            )}
             </div>
           </div>
         </div>
