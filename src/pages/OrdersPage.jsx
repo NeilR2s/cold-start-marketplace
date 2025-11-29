@@ -101,16 +101,23 @@ const OrdersPage = () => {
 
   const filteredTransactions = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
+    const matchesQuery = (t) =>
+      t.product.title.toLowerCase().includes(normalized) ||
+      t.host.name.toLowerCase().includes(normalized) ||
+      t.swapper.name.toLowerCase().includes(normalized);
+
     return MOCK_TRANSACTIONS.filter((t) => {
+      if (normalized) {
+        return matchesQuery(t);
+      }
       if (t.status !== travelerTab) return false;
-      if (!normalized) return true;
       return (
-        t.product.title.toLowerCase().includes(normalized) ||
-        t.host.name.toLowerCase().includes(normalized) ||
-        t.swapper.name.toLowerCase().includes(normalized)
+        true
       );
     });
   }, [travelerTab, searchQuery]);
+
+  const isSearching = searchQuery.trim().length > 0;
 
   return (
     <div className="px-4 py-6 space-y-6 pb-28">
@@ -153,17 +160,25 @@ const OrdersPage = () => {
         <div className="bg-slate-100 p-1 rounded-xl flex relative">
           <button 
             onClick={() => setTravelerTab('ongoing')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 ${travelerTab === 'ongoing' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 ${travelerTab === 'ongoing' && !isSearching ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            disabled={isSearching}
           >
             Ongoing Orders ({MOCK_TRANSACTIONS.filter(t => t.status === 'ongoing').length})
           </button>
           <button 
             onClick={() => setTravelerTab('past')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 ${travelerTab === 'past' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 ${travelerTab === 'past' && !isSearching ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            disabled={isSearching}
           >
             Past History
           </button>
         </div>
+
+        {isSearching && (
+          <p className="text-xs text-slate-500 px-1">
+            Showing matches for “{searchQuery.trim()}”
+          </p>
+        )}
 
         <div className="space-y-4">
           {filteredTransactions.length === 0 ? (
@@ -171,7 +186,9 @@ const OrdersPage = () => {
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Package size={24} className="text-slate-300"/>
               </div>
-              <p className="text-slate-400 text-sm">No {travelerTab} transactions found.</p>
+              <p className="text-slate-400 text-sm">
+                {isSearching ? 'No matches found.' : `No ${travelerTab} transactions found.`}
+              </p>
             </div>
           ) : (
             filteredTransactions.map((tx) => {
