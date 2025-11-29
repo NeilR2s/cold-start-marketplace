@@ -267,17 +267,55 @@ const ProductDetailModal = ({ product, onClose }) => {
             <p className="text-sm text-slate-600 leading-relaxed">{product.description || "No description provided."}</p>
           </div>
 
-                    {/* Trust Badge */}
-                    <div className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <ShieldCheck className="text-slate-400 flex-shrink-0" size={20} />
-                        <div>
-                            <h4 className="text-xs font-bold text-slate-700">Escrow Protected</h4>
-                            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
-                                Your payment is held securely until you receive the item.
-                            </p>
+          {/* Comments & Bids */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-800">Comments & Bids</h3>
+              <span className="text-[10px] text-slate-400 font-semibold">
+                {product.comments?.length || 0} active
+              </span>
+            </div>
+            <div className="space-y-3">
+              {product.comments?.map((comment) => {
+                const badge = getBidStatusBadge(comment.status);
+                return (
+                  <div key={comment.id} className="flex gap-3">
+                    <img
+                      src={comment.avatar}
+                      alt={comment.user}
+                      className="w-10 h-10 rounded-full border border-slate-100 object-cover"
+                    />
+                    <div className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-3 py-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="text-sm font-semibold text-slate-800">{comment.user}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400">{comment.timestamp}</span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold border ${badge.classes}`}
+                          >
+                            {badge.label}
+                          </span>
                         </div>
+                      </div>
+                      <p className="text-sm text-slate-600">{comment.message}</p>
                     </div>
-                </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Trust Badge */}
+          <div className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <ShieldCheck className="text-slate-400 flex-shrink-0" size={20} />
+            <div>
+              <h4 className="text-xs font-bold text-slate-700">Escrow Protected</h4>
+              <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                Your payment is held securely until you receive the item.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 bg-white mt-auto">
@@ -394,9 +432,8 @@ const TravelerDetailModal = ({ trip, onClose }) => {
 
 // --- MAIN PAGE COMPONENT ---
 
-function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = () => {} }) {
+function BrowsePage() {
   const navigate = useNavigate();
-  const isHostView = mode === 'host';
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal States
@@ -409,35 +446,7 @@ function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = 
   const [filterProductType, setFilterProductType] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
 
-  const hostGroupProduct = useMemo(
-    () => MOCK_PRODUCTS.find(item => item.hostView?.type === 'group'),
-    []
-  );
-  const hostSingleProduct = useMemo(
-    () => MOCK_PRODUCTS.find(item => item.hostView?.type === 'single'),
-    []
-  );
-
-  const handleOpenChat = (product) => {
-    if (!product) return;
-    navigate('/messages', { state: { productTag: product.tag } });
-    setSelectedProduct(null);
-  };
-
-  const handleAddProduct = () => {
-    setIsPostTripOpen(true);
-  };
-
-  const getStatusClass = (status) => {
-    const classes = {
-      Paid: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-      Confirmed: 'bg-blue-50 text-blue-700 border-blue-100',
-      Pending: 'bg-amber-50 text-amber-700 border-amber-100',
-      Negotiating: 'bg-purple-50 text-purple-700 border-purple-100',
-      default: 'bg-slate-100 text-slate-600 border-slate-200'
-    };
-    return classes[status] || classes.default;
-  };
+  // local browse mode only; dashboard is always buyer view for now
 
   // Filter Options
   const LOCATIONS = ["All", "Nearby (<5km)", "Quezon City", "Makati", "BGC", "Manila"];
@@ -473,8 +482,6 @@ function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = 
       <ProductDetailModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
-        mode={mode}
-        onOpenChat={handleOpenChat}
       />
       <TravelerDetailModal trip={selectedTrip} onClose={() => setSelectedTrip(null)} />
 
@@ -569,8 +576,7 @@ function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = 
           </div>
         </div>
 
-        {mode === 'buyer' ? (
-          <>
+        {/* DASHBOARD: Trending products with filters, then travelers */}
             {/* --- FILTER BAR --- */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sticky top-[80px] z-30 py-2 -mx-4 px-4 bg-slate-50">
               <button
@@ -633,6 +639,20 @@ function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = 
                 </div>
               </div>
             )}
+
+            {/* --- TRENDING HEADER --- */}
+            <div className="flex items-center justify-between px-1 mt-1">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Trending Swaps</h2>
+                <p className="text-xs text-slate-500">Showing featured listings with active bids.</p>
+              </div>
+              <button
+                onClick={() => navigate('/explore')}
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-700"
+              >
+                View more
+              </button>
+            </div>
 
             {/* --- PRODUCTS GRID --- */}
             <div className="grid grid-cols-2 gap-3">
@@ -750,13 +770,6 @@ function BrowsePage({ mode = 'swapper', setMode = () => {}, setIsPostTripOpen = 
                 ))}
               </div>
             </section>
-          </>
-        ) : (
-          <div className="py-20 text-center text-slate-400">
-            <Plane size={48} className="mx-auto mb-4 opacity-20" />
-            <p className="font-medium">Traveler Mode functionality coming soon.</p>
-          </div>
-        )}
       </div>
     </div>
   );
