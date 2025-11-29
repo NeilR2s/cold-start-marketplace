@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Globe, MapPin, ChevronRight, Plane, Plus, Bell, Package, 
-  Filter, Star, Heart, SlidersHorizontal, Map, Tag, X, 
-  ShieldCheck, Calendar, Info, CheckCircle, TrendingDown 
+import {
+  Globe, MapPin, ChevronRight, Plane, Plus, Bell, Package,
+  Filter, Star, Heart, SlidersHorizontal, Map, Tag, X,
+  ShieldCheck, Calendar, Info, CheckCircle, TrendingDown, HeartHandshake, ArrowLeftRight
 } from 'lucide-react';
 import { TextField, InputAdornment, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -90,17 +90,17 @@ const MOCK_PRODUCTS = [
 const formatPHP = (amount) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 
 const Avatar = ({ src, name, verified, size = "md" }) => {
-    const sizeClasses = size === "sm" ? "w-5 h-5" : size === "lg" ? "w-12 h-12" : "w-6 h-6";
-    return (
-        <div className="relative">
-            <img src={src} alt={name} className={`${sizeClasses} rounded-full border border-slate-200 object-cover`} />
-            {verified && (
-                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-[1px]">
-                    <CheckCircle size={size === "lg" ? 14 : 10} className="text-blue-500 fill-white" />
-                </div>
-            )}
+  const sizeClasses = size === "sm" ? "w-5 h-5" : size === "lg" ? "w-12 h-12" : "w-6 h-6";
+  return (
+    <div className="relative">
+      <img src={src} alt={name} className={`${sizeClasses} rounded-full border border-slate-200 object-cover`} />
+      {verified && (
+        <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-[1px]">
+          <CheckCircle size={size === "lg" ? 14 : 10} className="text-blue-500 fill-white" />
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 const Badge = ({ children, type }) => {
@@ -119,212 +119,212 @@ const Badge = ({ children, type }) => {
 // --- MODAL COMPONENTS ---
 
 const ProductDetailModal = ({ product, onClose }) => {
-    if (!product) return null;
+  if (!product) return null;
 
-    const isGroupOrder = product.swapType === 'Group Order';
-    const isPasabuy = product.swapType === 'Pasabuy';
+  const isGroupOrder = product.swapType === 'Group Order';
+  const isPasabuy = product.swapType === 'Pasabuy';
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-                {/* Header Image */}
-                <div className="h-48 bg-slate-200 relative shrink-0">
-                    <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
-                    <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white rounded-full text-slate-600 transition-colors backdrop-blur-sm">
-                        <X size={20} />
-                    </button>
-                    <div className="absolute bottom-4 left-4">
-                        <Badge type={product.swapType}>{product.swapType}</Badge>
-                    </div>
-                </div>
-
-                <div className="overflow-y-auto p-5 space-y-6">
-                    {/* Title & Price */}
-                    <div>
-                        <div className="flex justify-between items-start">
-                            <h2 className="text-xl font-bold text-slate-900 leading-tight flex-1 mr-4">{product.title}</h2>
-                            <div className="text-right">
-                                <div className="text-2xl font-bold text-emerald-600">{formatPHP(product.price)}</div>
-                                {product.originalPrice && <div className="text-xs text-slate-400 line-through">{formatPHP(product.originalPrice)}</div>}
-                            </div>
-                        </div>
-                        <div className="mt-3 flex items-center gap-3 pb-4 border-b border-slate-100">
-                            <Avatar src={product.user.image} name={product.user.name} verified={product.user.verified} size="lg" />
-                            <div>
-                                <div className="text-sm font-bold text-slate-900">{product.user.name}</div>
-                                <div className="flex items-center text-xs text-slate-500">
-                                    <Star size={12} className="text-amber-400 fill-amber-400 mr-1" />
-                                    <span>{product.user.rating} Rating</span>
-                                    <span className="mx-1">•</span>
-                                    <MapPin size={12} className="mr-0.5" /> {product.location}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Group Order Visualizer */}
-                    {isGroupOrder && product.pooling && (
-                         <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
-                            <div className="flex justify-between items-center mb-2">
-                                <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-800">
-                                    <TrendingDown size={16} /> Pooling Progress
-                                </div>
-                                <span className="text-xs font-medium text-emerald-600">{product.pooling.current}/{product.pooling.target} Joined</span>
-                            </div>
-                            <div className="h-2.5 bg-emerald-200/50 rounded-full overflow-hidden mb-2">
-                                <div 
-                                    className="h-full bg-emerald-500 rounded-full" 
-                                    style={{ width: `${(product.pooling.current / product.pooling.target) * 100}%` }} 
-                                />
-                            </div>
-                            <p className="text-[10px] text-emerald-700">
-                                Join now to lower the handling fee to <strong>{formatPHP(product.pooling.minFee)}</strong>! Ends {new Date(product.deadline).toLocaleDateString()}.
-                            </p>
-                         </div>
-                    )}
-
-                    {/* Pasabuy Specifics */}
-                    {isPasabuy && (
-                         <div className="flex gap-3 p-3 bg-purple-50 border border-purple-100 rounded-xl">
-                            <Plane className="text-purple-600 flex-shrink-0" size={20} />
-                            <div>
-                                <h4 className="text-xs font-bold text-purple-800">Traveler Request</h4>
-                                <p className="text-[10px] text-purple-600 leading-relaxed mt-0.5">
-                                    Seller is traveling soon. Request usually closes 2 days before flight.
-                                </p>
-                            </div>
-                         </div>
-                    )}
-
-                    {/* Description */}
-                    <div>
-                        <h3 className="text-sm font-bold text-slate-800 mb-2">Description</h3>
-                        <p className="text-sm text-slate-600 leading-relaxed">{product.description || "No description provided."}</p>
-                    </div>
-
-                    {/* Trust Badge */}
-                    <div className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <ShieldCheck className="text-slate-400 flex-shrink-0" size={20} />
-                        <div>
-                            <h4 className="text-xs font-bold text-slate-700">Escrow Protected</h4>
-                            <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
-                                Your payment is held securely until you receive the item.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="p-4 border-t border-slate-100 bg-white mt-auto">
-                    <button className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
-                        {isGroupOrder ? "Join Group Order" : isPasabuy ? "Request to Buy" : "Buy Now"}
-                    </button>
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Header Image */}
+        <div className="h-48 bg-slate-200 relative shrink-0">
+          <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+          <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white rounded-full text-slate-600 transition-colors backdrop-blur-sm">
+            <X size={20} />
+          </button>
+          <div className="absolute bottom-4 left-4">
+            <Badge type={product.swapType}>{product.swapType}</Badge>
+          </div>
         </div>
-    );
+
+        <div className="overflow-y-auto p-5 space-y-6">
+          {/* Title & Price */}
+          <div>
+            <div className="flex justify-between items-start">
+              <h2 className="text-xl font-bold text-slate-900 leading-tight flex-1 mr-4">{product.title}</h2>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-emerald-600">{formatPHP(product.price)}</div>
+                {product.originalPrice && <div className="text-xs text-slate-400 line-through">{formatPHP(product.originalPrice)}</div>}
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-3 pb-4 border-b border-slate-100">
+              <Avatar src={product.user.image} name={product.user.name} verified={product.user.verified} size="lg" />
+              <div>
+                <div className="text-sm font-bold text-slate-900">{product.user.name}</div>
+                <div className="flex items-center text-xs text-slate-500">
+                  <Star size={12} className="text-amber-400 fill-amber-400 mr-1" />
+                  <span>{product.user.rating} Rating</span>
+                  <span className="mx-1">•</span>
+                  <MapPin size={12} className="mr-0.5" /> {product.location}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Group Order Visualizer */}
+          {isGroupOrder && product.pooling && (
+            <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-800">
+                  <TrendingDown size={16} /> Pooling Progress
+                </div>
+                <span className="text-xs font-medium text-emerald-600">{product.pooling.current}/{product.pooling.target} Joined</span>
+              </div>
+              <div className="h-2.5 bg-emerald-200/50 rounded-full overflow-hidden mb-2">
+                <div
+                  className="h-full bg-emerald-500 rounded-full"
+                  style={{ width: `${(product.pooling.current / product.pooling.target) * 100}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-emerald-700">
+                Join now to lower the handling fee to <strong>{formatPHP(product.pooling.minFee)}</strong>! Ends {new Date(product.deadline).toLocaleDateString()}.
+              </p>
+            </div>
+          )}
+
+          {/* Pasabuy Specifics */}
+          {isPasabuy && (
+            <div className="flex gap-3 p-3 bg-purple-50 border border-purple-100 rounded-xl">
+              <Plane className="text-purple-600 flex-shrink-0" size={20} />
+              <div>
+                <h4 className="text-xs font-bold text-purple-800">Traveler Request</h4>
+                <p className="text-[10px] text-purple-600 leading-relaxed mt-0.5">
+                  Seller is traveling soon. Request usually closes 2 days before flight.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-bold text-slate-800 mb-2">Description</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">{product.description || "No description provided."}</p>
+          </div>
+
+          {/* Trust Badge */}
+          <div className="flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <ShieldCheck className="text-slate-400 flex-shrink-0" size={20} />
+            <div>
+              <h4 className="text-xs font-bold text-slate-700">Escrow Protected</h4>
+              <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                Your payment is held securely until you receive the item.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-4 border-t border-slate-100 bg-white mt-auto">
+          <button className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
+            {isGroupOrder ? "Join Group Order" : isPasabuy ? "Request to Buy" : "Buy Now"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const TravelerDetailModal = ({ trip, onClose }) => {
-    if (!trip) return null;
+  if (!trip) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <h2 className="font-bold text-lg text-slate-800">Trip Details</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <div className="p-6 space-y-6 overflow-y-auto bg-slate-50/50">
-                    {/* Header Route */}
-                    <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="text-center flex-1">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Origin</div>
-                            <div className="text-lg font-bold text-slate-900">{trip.origin.split(',')[0]}</div>
-                            <div className="text-xs text-slate-500">{trip.origin.split(',')[1]}</div>
-                        </div>
-                        <div className="flex flex-col items-center px-4">
-                            <Plane className="text-emerald-500 mb-1" size={24} />
-                            <div className="h-px w-12 bg-emerald-200"></div>
-                        </div>
-                        <div className="text-center flex-1">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dest</div>
-                            <div className="text-lg font-bold text-slate-900">{trip.destination.split(',')[0]}</div>
-                            <div className="text-xs text-slate-500">{trip.destination.split(',')[1]}</div>
-                        </div>
-                    </div>
-
-                    {/* Dates */}
-                    <div className="flex justify-between text-sm text-slate-600 px-2">
-                        <div className="flex items-center gap-2">
-                            <Calendar size={16} className="text-emerald-600" />
-                            <span>Arriving: <span className="font-bold text-slate-900">{trip.date}</span></span>
-                        </div>
-                    </div>
-
-                    {/* Capacity Visualizer */}
-                    <div className="bg-white p-4 rounded-xl border border-slate-200">
-                        <div className="flex justify-between items-end mb-3">
-                            <div>
-                                <h3 className="text-sm font-bold text-slate-800">Luggage Capacity</h3>
-                                <p className="text-xs text-slate-500">Available space for pasabuy</p>
-                            </div>
-                            <div className="text-right">
-                                <span className="text-2xl font-bold text-emerald-600">{trip.capacity.available}kg</span>
-                                <span className="text-xs text-slate-400"> / {trip.capacity.total}kg</span>
-                            </div>
-                        </div>
-                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden mb-2">
-                             <div 
-                                className="h-full bg-emerald-500 rounded-full" 
-                                style={{ width: `${(trip.capacity.available / trip.capacity.total) * 100}%` }} 
-                            />
-                        </div>
-                        <div className="text-xs font-medium text-emerald-700 bg-emerald-50 inline-block px-2 py-1 rounded">
-                            Rate: {formatPHP(trip.capacity.pricePerKg)} per kg
-                        </div>
-                    </div>
-
-                    {/* Shops */}
-                    <div>
-                        <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <Tag size={16} /> Accepting Orders From
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {trip.shops.map(shop => (
-                                <span key={shop} className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 shadow-sm">
-                                    {shop}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
-                        <h3 className="text-xs font-bold text-amber-800 uppercase tracking-wide mb-1 flex items-center gap-2">
-                            <Info size={14} /> Traveler Notes
-                        </h3>
-                        <p className="text-xs text-amber-900/80 leading-relaxed">
-                            "{trip.notes}"
-                        </p>
-                        <div className="mt-3 pt-3 border-t border-amber-200/50">
-                             <span className="text-[10px] font-bold text-amber-800">Drop-off: </span>
-                             <span className="text-[10px] text-amber-900">{trip.dropOff}</span>
-                        </div>
-                    </div>
-                </div>
-
-                 <div className="p-4 border-t border-slate-100 bg-white">
-                    <button className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]">
-                        Message Traveler
-                    </button>
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <h2 className="font-bold text-lg text-slate-800">Trip Details</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+            <X size={20} />
+          </button>
         </div>
-    );
+
+        <div className="p-6 space-y-6 overflow-y-auto bg-slate-50/50">
+          {/* Header Route */}
+          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="text-center flex-1">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Origin</div>
+              <div className="text-lg font-bold text-slate-900">{trip.origin.split(',')[0]}</div>
+              <div className="text-xs text-slate-500">{trip.origin.split(',')[1]}</div>
+            </div>
+            <div className="flex flex-col items-center px-4">
+              <Plane className="text-emerald-500 mb-1" size={24} />
+              <div className="h-px w-12 bg-emerald-200"></div>
+            </div>
+            <div className="text-center flex-1">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dest</div>
+              <div className="text-lg font-bold text-slate-900">{trip.destination.split(',')[0]}</div>
+              <div className="text-xs text-slate-500">{trip.destination.split(',')[1]}</div>
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div className="flex justify-between text-sm text-slate-600 px-2">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-emerald-600" />
+              <span>Arriving: <span className="font-bold text-slate-900">{trip.date}</span></span>
+            </div>
+          </div>
+
+          {/* Capacity Visualizer */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="flex justify-between items-end mb-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Luggage Capacity</h3>
+                <p className="text-xs text-slate-500">Available space for pasabuy</p>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-emerald-600">{trip.capacity.available}kg</span>
+                <span className="text-xs text-slate-400"> / {trip.capacity.total}kg</span>
+              </div>
+            </div>
+            <div className="h-3 bg-slate-100 rounded-full overflow-hidden mb-2">
+              <div
+                className="h-full bg-emerald-500 rounded-full"
+                style={{ width: `${(trip.capacity.available / trip.capacity.total) * 100}%` }}
+              />
+            </div>
+            <div className="text-xs font-medium text-emerald-700 bg-emerald-50 inline-block px-2 py-1 rounded">
+              Rate: {formatPHP(trip.capacity.pricePerKg)} per kg
+            </div>
+          </div>
+
+          {/* Shops */}
+          <div>
+            <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <Tag size={16} /> Accepting Orders From
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {trip.shops.map(shop => (
+                <span key={shop} className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 shadow-sm">
+                  {shop}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
+            <h3 className="text-xs font-bold text-amber-800 uppercase tracking-wide mb-1 flex items-center gap-2">
+              <Info size={14} /> Traveler Notes
+            </h3>
+            <p className="text-xs text-amber-900/80 leading-relaxed">
+              "{trip.notes}"
+            </p>
+            <div className="mt-3 pt-3 border-t border-amber-200/50">
+              <span className="text-[10px] font-bold text-amber-800">Drop-off: </span>
+              <span className="text-[10px] text-amber-900">{trip.dropOff}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 bg-white">
+          <button className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]">
+            Message Traveler
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // --- MAIN PAGE COMPONENT ---
@@ -332,11 +332,11 @@ const TravelerDetailModal = ({ trip, onClose }) => {
 const BrowsePage = () => {
   const [mode, setMode] = useState('buyer');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Modal States
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedTrip, setSelectedTrip] = useState(null);
-  
+
   // Filter States
   const [filterLocation, setFilterLocation] = useState('All');
   const [filterSwapType, setFilterSwapType] = useState('All');
@@ -353,7 +353,7 @@ const BrowsePage = () => {
     return MOCK_PRODUCTS.filter(item => {
       // Search Logic
       const matchSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       // Location Logic
       let matchLocation = true;
       if (filterLocation === "Nearby (<5km)") matchLocation = item.distance < 5;
@@ -361,7 +361,7 @@ const BrowsePage = () => {
 
       // Swap Type Logic
       const matchSwap = filterSwapType === "All" || item.swapType === filterSwapType;
-      
+
       // Product Type Logic
       const matchType = filterProductType === "All" || item.type === filterProductType;
 
@@ -414,33 +414,55 @@ const BrowsePage = () => {
 
       <div className="px-4 space-y-6">
         {/* --- HERO SECTION --- */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 p-6 shadow-xl shadow-emerald-900/10 mt-4">
-          <div className="absolute top-0 right-0 p-24 bg-white/10 blur-[60px] rounded-full pointer-events-none transform translate-x-10 -translate-y-10" />
-          <div className="relative z-10 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wide backdrop-blur-md border border-white/10">
-                <Globe size={10} /> Community Buys
+        <div className="relative overflow-hidden rounded-2xl shadow-xl shadow-emerald-900/10 mt-4 h-[280px] flex flex-col justify-end group">
+
+          {/* 1. VISUAL STORYTELLING IMAGE */}
+          {/* Placeholder: An image showing a warm interaction between two neighbors. 
+            One is handing over a home-baked pie, while the other is fixing a bike or holding a tool. 
+            This visually explains "Goods for Services" without words. */}
+          <img
+            src="https://media.istockphoto.com/id/507831862/photo/woman-bringing-meal-for-elderly-neighbour.jpg?s=612x612&w=0&k=20&c=VgQWMNvj1d3dPb0Qxiyf5ttb1GlLMzg5Rj5FftVqwjc="
+            alt="Two neighbors exchanging a home-cooked meal for a repair service"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+
+          {/* 2. GRADIENT OVERLAY */}
+          {/* Darker gradient at bottom to ensure text readability over the image */}
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-900/60 to-transparent" />
+
+          {/* 3. ATMOSPHERIC GLOW */}
+          <div className="absolute top-0 right-0 p-24 bg-amber-400/20 blur-[60px] rounded-full pointer-events-none transform translate-x-10 -translate-y-10 mix-blend-screen" />
+
+          {/* CONTENT */}
+          <div className="relative z-10 p-6 text-white">
+            <div className="flex items-center justify-between mb-10">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/30 text-[10px] font-bold uppercase tracking-wide backdrop-blur-md border border-emerald-200/20 text-emerald-100">
+                <HeartHandshake size={12} /> Cashless Community
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2 leading-tight">
-              Find goodies near you.
+
+            <h1 className="text-4xl font-extrabold mb-2 leading-tight">
+              Swap items, <br /> skip the cash
             </h1>
-            <p className="text-emerald-100 text-xs mb-5 font-medium max-w-[200px]">
-              Join group orders to save on shipping or request items from travelers.
+
+            <p className="text-emerald-100/90 text-sm mb-6 font-medium max-w-[260px] leading-relaxed">
+              Swap services, trade goods, and connect with neighbors. No wallet required.
             </p>
-            <div className="flex p-1 bg-black/20 rounded-lg w-fit backdrop-blur-sm">
-              <button 
-                onClick={() => setMode('buyer')} 
-                className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${mode === 'buyer' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-100 hover:bg-white/10'}`}
+
+            {/* TOGGLE: Seeking vs Offering */}
+            <div className="flex p-1 bg-white/10 rounded-lg w-fit backdrop-blur-md border border-white/10">
+              {/* <button
+                onClick={() => setMode('seeking')}
+                className={`flex items-center gap-2 px-5 py-2 rounded-md text-[12px] font-bold transition-all duration-300 ${mode === 'seeking' ? 'bg-white text-emerald-800 shadow-lg scale-100' : 'text-emerald-50 hover:bg-white/5'}`}
               >
-                Buyer
+                <span>I need help</span>
               </button>
-              <button 
-                onClick={() => setMode('traveler')} 
-                className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${mode === 'traveler' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-100 hover:bg-white/10'}`}
+              <button
+                onClick={() => setMode('offering')}
+                className={`flex items-center gap-2 px-5 py-2 rounded-md text-[12px] font-bold transition-all duration-300 ${mode === 'offering' ? 'bg-emerald-500 text-white shadow-lg scale-100' : 'text-emerald-50 hover:bg-white/5'}`}
               >
-                Traveler
-              </button>
+                <span>I can help</span>
+              </button> */}
             </div>
           </div>
         </div>
@@ -449,17 +471,17 @@ const BrowsePage = () => {
           <>
             {/* --- FILTER BAR --- */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sticky top-[80px] z-30 py-2 -mx-4 px-4 bg-slate-50">
-              <button 
+              <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-colors ${activeFiltersCount > 0 ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
               >
                 <SlidersHorizontal size={12} />
                 Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
               </button>
-              
+
               {PRODUCT_TYPES.map((cat, i) => (
-                <button 
-                  key={cat} 
+                <button
+                  key={cat}
                   onClick={() => setFilterProductType(cat)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-colors ${filterProductType === cat ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400'}`}
                 >
@@ -470,61 +492,61 @@ const BrowsePage = () => {
 
             {/* --- EXPANDED FILTERS PANEL --- */}
             {showFilters && (
-               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
-                 <div className="flex justify-between items-center mb-3">
-                   <h3 className="text-sm font-bold text-slate-800">Refine Search</h3>
-                   <button onClick={() => {setFilterLocation('All'); setFilterSwapType('All'); setFilterProductType('All');}} className="text-[10px] font-bold text-red-500 hover:underline">Reset All</button>
-                 </div>
-                 
-                 <div className="space-y-4">
-                   <div>
-                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-1"><Tag size={10} /> Swap Type</label>
-                     <div className="flex flex-wrap gap-2">
-                       {SWAP_TYPES.map(type => (
-                         <button 
-                           key={type}
-                           onClick={() => setFilterSwapType(type)}
-                           className={`px-2 py-1 rounded text-[10px] font-semibold border ${filterSwapType === type ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
-                         >
-                           {type}
-                         </button>
-                       ))}
-                     </div>
-                   </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-bold text-slate-800">Refine Search</h3>
+                  <button onClick={() => { setFilterLocation('All'); setFilterSwapType('All'); setFilterProductType('All'); }} className="text-[10px] font-bold text-red-500 hover:underline">Reset All</button>
+                </div>
 
-                   <div>
-                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-1"><Map size={10} /> Location</label>
-                     <div className="flex flex-wrap gap-2">
-                       {LOCATIONS.map(loc => (
-                         <button 
-                           key={loc}
-                           onClick={() => setFilterLocation(loc)}
-                           className={`px-2 py-1 rounded text-[10px] font-semibold border ${filterLocation === loc ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
-                         >
-                           {loc}
-                         </button>
-                       ))}
-                     </div>
-                   </div>
-                 </div>
-               </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-1"><Tag size={10} /> Swap Type</label>
+                    <div className="flex flex-wrap gap-2">
+                      {SWAP_TYPES.map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setFilterSwapType(type)}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold border ${filterSwapType === type ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-1"><Map size={10} /> Location</label>
+                    <div className="flex flex-wrap gap-2">
+                      {LOCATIONS.map(loc => (
+                        <button
+                          key={loc}
+                          onClick={() => setFilterLocation(loc)}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold border ${filterLocation === loc ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
+                        >
+                          {loc}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* --- PRODUCTS GRID --- */}
             <div className="grid grid-cols-2 gap-3">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map(product => (
-                  <div 
-                    key={product.id} 
+                  <div
+                    key={product.id}
                     onClick={() => setSelectedProduct(product)}
                     className="group bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
                   >
                     {/* Image Container */}
                     <div className="aspect-[4/5] w-full bg-slate-200 relative overflow-hidden">
-                      <img 
-                        src={product.image} 
-                        alt={product.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute top-2 left-2">
                         <Badge type={product.swapType}>{product.swapType}</Badge>
@@ -541,7 +563,7 @@ const BrowsePage = () => {
                           {product.title}
                         </h3>
                       </div>
-                      
+
                       <div className="flex items-baseline gap-1.5 mb-2">
                         <span className="text-sm font-bold text-emerald-700">{formatPHP(product.price)}</span>
                         {product.originalPrice && (
@@ -557,14 +579,14 @@ const BrowsePage = () => {
                       </div>
 
                       <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
-                         <div className="flex items-center gap-1.5">
-                           <Avatar src={product.user.image} name={product.user.name} />
-                           <span className="text-[10px] font-medium text-slate-600 truncate max-w-[60px]">{product.user.name}</span>
-                         </div>
-                         <div className="flex items-center text-[10px] font-bold text-amber-500">
-                           <Star size={10} className="fill-amber-500 mr-0.5" />
-                           {product.user.rating}
-                         </div>
+                        <div className="flex items-center gap-1.5">
+                          <Avatar src={product.user.image} name={product.user.name} />
+                          <span className="text-[10px] font-medium text-slate-600 truncate max-w-[60px]">{product.user.name}</span>
+                        </div>
+                        <div className="flex items-center text-[10px] font-bold text-amber-500">
+                          <Star size={10} className="fill-amber-500 mr-0.5" />
+                          {product.user.rating}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -573,7 +595,7 @@ const BrowsePage = () => {
                 <div className="col-span-full py-12 flex flex-col items-center justify-center text-slate-400">
                   <Package size={48} className="mb-4 opacity-20" />
                   <p className="text-sm font-medium">No items found matching your filters.</p>
-                  <button onClick={() => {setFilterLocation('All'); setFilterSwapType('All'); setFilterProductType('All'); setSearchQuery('');}} className="mt-2 text-xs font-bold text-emerald-600">Clear Filters</button>
+                  <button onClick={() => { setFilterLocation('All'); setFilterSwapType('All'); setFilterProductType('All'); setSearchQuery(''); }} className="mt-2 text-xs font-bold text-emerald-600">Clear Filters</button>
                 </div>
               )}
             </div>
@@ -589,8 +611,8 @@ const BrowsePage = () => {
               </div>
               <div className="space-y-4">
                 {MOCK_TRIPS.map(trip => (
-                  <div 
-                    key={trip.id} 
+                  <div
+                    key={trip.id}
                     onClick={() => setSelectedTrip(trip)}
                     className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-300 transition-all cursor-pointer"
                   >
@@ -629,8 +651,8 @@ const BrowsePage = () => {
           </>
         ) : (
           <div className="py-20 text-center text-slate-400">
-             <Plane size={48} className="mx-auto mb-4 opacity-20" />
-             <p className="font-medium">Traveler Mode functionality coming soon.</p>
+            <Plane size={48} className="mx-auto mb-4 opacity-20" />
+            <p className="font-medium">Traveler Mode functionality coming soon.</p>
           </div>
         )}
       </div>
