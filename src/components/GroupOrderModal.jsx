@@ -7,11 +7,11 @@ import { PRICE_BREAKDOWN } from '../data';
 
 
 const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
-  if (!selectedGO) return null;
-
   const [participants, setParticipants] = useState(selectedGO?.pooling?.current || 0);
   const [selectedBias, setSelectedBias] = useState(null);
   const [joined, setJoined] = useState(false);
+
+  if (!selectedGO) return null;
 
   // Ambag Algorithm
   const calculateFee = (count) => {

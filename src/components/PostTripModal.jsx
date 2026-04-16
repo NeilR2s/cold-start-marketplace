@@ -4,14 +4,14 @@ import { X, MapPin, AlertTriangle, Calendar, Plane } from 'lucide-react';
 import { Card } from './CustomComponents';
 
 const PostTripModal = ({ isOpen, onClose, showToast }) => {
-  if (!isOpen) return null;
-
   const navigate = useNavigate();
   const [origin, setOrigin] = useState("Tokyo");
   const [destination, setDestination] = useState("Manila");
   const [capacityKg, setCapacityKg] = useState(20);
   const [pricePerKg, setPricePerKg] = useState(800);
   const [returnDate, setReturnDate] = useState("");
+
+  if (!isOpen) return null;
 
   const handlePublish = () => {
     showToast("Pasabuy trip posted! Track it under Pasabuys.");
