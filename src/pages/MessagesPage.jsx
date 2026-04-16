@@ -285,44 +285,47 @@ const MessagesPage = () => {
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const location = useLocation();
-  const [highlightedProductTag, setHighlightedProductTag] = useState(
-    location.state?.productTag || null
-  );
+  const routeState = location.state ?? null;
+  const highlightedProductTag = routeState?.productTag ?? routeState?.linkedTag ?? null;
 
   useEffect(() => {
-    const { conversationId, chatType, productTag, linkedTag } = location.state ?? {};
-
-    if (productTag) {
-      setHighlightedProductTag(productTag);
-    }
+    const { conversationId, chatType, linkedTag } = routeState ?? {};
+    let timeoutId;
 
     if (conversationId) {
       const linkedConversation = MOCK_CONVERSATIONS.find((chat) => chat.id === conversationId);
       if (linkedConversation) {
-        setTimeout(() => {
+        timeoutId = window.setTimeout(() => {
           setActiveChatId(linkedConversation.id);
           setActiveTab(chatType ?? linkedConversation.channel ?? "all");
         }, 0);
       }
-      return;
+      return () => window.clearTimeout(timeoutId);
     }
 
     if (linkedTag) {
       const linkedByTag = MOCK_CONVERSATIONS.find((chat) => chat.context?.label === linkedTag);
       if (linkedByTag) {
-        setTimeout(() => {
+        timeoutId = window.setTimeout(() => {
           setActiveChatId(linkedByTag.id);
           setActiveTab(chatType ?? linkedByTag.channel ?? "all");
-          setHighlightedProductTag(linkedTag);
         }, 0);
       }
-      return;
+      return () => window.clearTimeout(timeoutId);
     }
 
     if (chatType && chatType !== "all") {
-      setActiveTab(chatType);
+      timeoutId = window.setTimeout(() => {
+        setActiveTab(chatType);
+      }, 0);
     }
-  }, [location]);
+
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [routeState]);
 
   const activeChat = MOCK_CONVERSATIONS.find((c) => c.id === activeChatId);
 
