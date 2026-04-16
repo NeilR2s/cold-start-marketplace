@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { FilterState, TagCategory } from "../../types/explore";
+import { FilterState, TagCategory, TagValue } from "../../types/explore";
 import { BARTER_TYPES, CATEGORIES, EXCHANGE_METHODS, LOCATION_FILTERS, TAG_GROUPS } from "../../constants/exploreFilters";
 import { CategoryChip } from "./CategoryChip";
 import { TagChip } from "./TagChip";
@@ -18,7 +18,7 @@ const toggleValue = <T,>(values: T[], value: T) => (values.includes(value) ? val
 export function FilterDrawer({ open, filters, onChange, onClose, onReset }: FilterDrawerProps) {
   const setFilters = (payload: Partial<FilterState>) => onChange({ ...filters, ...payload });
 
-  const toggleTag = (group: TagCategory, value: string) => {
+  const toggleTag = (group: TagCategory, value: TagValue) => {
     const groupValues = filters.tags[group] ?? [];
     const updatedGroup = groupValues.includes(value) ? groupValues.filter((v) => v !== value) : [...groupValues, value];
     setFilters({ tags: { ...filters.tags, [group]: updatedGroup } });
@@ -134,4 +134,3 @@ export function FilterDrawer({ open, filters, onChange, onClose, onReset }: Filt
     </div>
   );
 }
-

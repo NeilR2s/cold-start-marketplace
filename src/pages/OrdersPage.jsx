@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Package, Clock, CheckCircle, MoreHorizontal, Star, X } from 'lucide-react';
 import { Card as CustomCard, Avatar } from '@/components/CustomComponents';
@@ -117,7 +117,7 @@ const OrdersPage = ({ user }) => {
 
   const fromHostTrip = location.state?.from === 'hostTrip';
 
-  const filteredTransactions = useMemo(() => {
+  const filteredTransactions = (() => {
     const normalized = searchQuery.trim().toLowerCase();
     const matchesQuery = (t) =>
       t.product.title.toLowerCase().includes(normalized) ||
@@ -133,7 +133,7 @@ const OrdersPage = ({ user }) => {
         true
       );
     });
-  }, [travelerTab, searchQuery]);
+  })();
 
   const isSearching = searchQuery.trim().length > 0;
 

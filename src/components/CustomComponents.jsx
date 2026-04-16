@@ -1,4 +1,3 @@
-import React from 'react';
 import { ShieldCheck, Bell } from 'lucide-react';
 
 export const Card = ({ children, className = "", onClick, noHover = false }) => (
@@ -29,13 +28,25 @@ export const Badge = ({ children, type = "neutral" }) => {
     );
 };
 
-export const Avatar = ({ name, verified, size = "md" }) => {
-    const sizeClass = size === "lg" ? "w-14 h-14 text-xl" : size === "sm" ? "w-6 h-6 text-[10px]" : "w-9 h-9 text-xs";
+export const Avatar = ({ src, name, verified, size = "md" }) => {
+    const sizeClasses = {
+        xs: "w-7 h-7 text-[10px]",
+        sm: "w-6 h-6 text-[10px]",
+        md: "w-9 h-9 text-xs",
+        lg: "w-14 h-14 text-xl",
+    };
+    const sizeClass = sizeClasses[size] || sizeClasses.md;
+    const initials = (name || "?").substring(0, 2).toUpperCase();
+
     return (
         <div className="relative inline-block">
-            <div className={`${sizeClass} rounded-full bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-sm border-2 border-white`}>
-                {name.substring(0, 2).toUpperCase()}
-            </div>
+            {src ? (
+                <img src={src} alt={name} className={`${sizeClass} rounded-full object-cover shadow-sm border-2 border-white`} />
+            ) : (
+                <div className={`${sizeClass} rounded-full bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-sm border-2 border-white`}>
+                    {initials}
+                </div>
+            )}
             {verified && (
                 <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
                     <ShieldCheck className="w-3 h-3 text-blue-500 fill-blue-500/10" />
@@ -45,23 +56,25 @@ export const Avatar = ({ name, verified, size = "md" }) => {
     );
 };
 
-export const Header = ({userName, isVerified}) => {
-    <header className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-slate-200 bg-white/80">
-        <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <BitbitLogo className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm p-1" />
-                <span className="font-bold text-lg tracking-wide text-slate-900">Bitbit</span>
+export const Header = ({ userName, isVerified }) => {
+    return (
+        <header className="sticky top-0 z-40 w-full backdrop-blur-md border-b border-slate-200 bg-white/80">
+            <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <BitbitLogo className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm p-1" />
+                    <span className="font-bold text-lg tracking-wide text-slate-900">Bitbit</span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button className="relative text-slate-500 hover:text-slate-800 transition-colors">
+                        <Bell size={20} />
+                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                    </button>
+                    <Avatar name={userName} verified={isVerified} />
+                </div>
             </div>
-            <div className="flex items-center gap-3">
-                <button className="relative text-slate-500 hover:text-slate-800 transition-colors">
-                    <Bell size={20} />
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-                </button>
-                <Avatar name={userName} verified={isVerified} />
-            </div>
-        </div>
-    </header>
-}
+        </header>
+    );
+};
 
 export const BitbitLogo = ({ className, ...props }) => {
     return (
@@ -77,9 +90,3 @@ export const BitbitLogo = ({ className, ...props }) => {
         </svg>
     );
 };
-
-// export const BitbitDrawing = ({className, ...props}) => {
-//     return (
-        
-//     )
-// }
