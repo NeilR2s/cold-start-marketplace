@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, TrendingDown, ShieldCheck, CheckCircle } from 'lucide-react';
 import { Card, Badge, Avatar, Button } from '@/components/ui';
 import { formatPHP, formatCurrency } from '@/utils';
-import { PRICE_BREAKDOWN, GroupOrder } from '@/data';
+import { PRICE_BREAKDOWN } from '@/data';
+import { GroupOrder } from '@/types/groupOrder';
+import { groupOrderService } from '@/services/groupOrderService';
 
 export interface GroupOrderModalProps {
   selectedGO: GroupOrder | null;
@@ -14,28 +16,44 @@ export const GroupOrderModal: React.FC<GroupOrderModalProps> = ({ selectedGO, on
   const [participants, setParticipants] = useState<number>(selectedGO?.pooling?.current || 0);
   const [selectedBias, setSelectedBias] = useState<string | null>(null);
   const [joined, setJoined] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (selectedGO) {
+      setParticipants(selectedGO.pooling.current);
+      setSelectedBias(null);
+      setJoined(false);
+    }
+  }, [selectedGO]);
 
   if (!selectedGO) return null;
 
-  // Ambag Algorithm
-  const calculateFee = (count: number): number => {
-    const { baseFee, minFee, target } = selectedGO.pooling;
-    if (count >= target) return minFee;
-    const discount = ((baseFee - minFee) / target) * count;
-    return Math.round(baseFee - discount);
-  };
+  const currentFee = groupOrderService.calculateFee(selectedGO, participants);
+  const potentialNextFee = groupOrderService.calculateFee(selectedGO, participants + 5);
 
-  const currentFee = calculateFee(participants);
-  const potentialNextFee = calculateFee(participants + 5);
-
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!selectedBias && selectedGO.biases.length > 0) {
       showToast("Please select a Bias first!", "error");
       return;
     }
-    setJoined(true);
-    setParticipants(p => p + 1);
-    showToast("Successfully joined Group Order!");
+
+    setIsSubmitting(true);
+    try {
+      const result = await groupOrderService.joinGroupOrder({
+        groupOrderId: selectedGO.id,
+        selectedBias: selectedBias || undefined,
+        quantity: 1,
+        paymentMethod: 'escrow',
+      });
+
+      setJoined(true);
+      setParticipants(result.newParticipantCount);
+      showToast("Successfully joined Group Order via Escrow!");
+    } catch {
+      showToast("Failed to join group order. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const totalPrice = formatCurrency(
@@ -195,9 +213,10 @@ export const GroupOrderModal: React.FC<GroupOrderModalProps> = ({ selectedGO, on
             <Button 
               variant="emerald"
               onClick={handleJoin}
+              disabled={isSubmitting}
               className="w-full h-12 text-sm font-bold"
             >
-              Join & Pay via Escrow
+              {isSubmitting ? "Processing..." : "Join & Pay via Escrow"}
             </Button>
           )}
         </div>

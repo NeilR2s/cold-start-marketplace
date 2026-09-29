@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Search,
@@ -11,301 +11,20 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { Card, Avatar } from "@/components/ui";
+import { Conversation, ChatChannel } from "@/types/chat";
+import { chatService } from "@/services/chatService";
 
-export interface ChatMessage {
-  id: number;
-  sender: "me" | "them";
-  text: string;
-  time: string;
-}
-
-export interface ChatPartner {
-  name: string;
-  verified: boolean;
-  status: "online" | "offline";
-}
-
-export interface ChatContext {
-  label: string;
-  status: string;
-  route?: string;
-  productTag?: string;
-  productName?: string;
-}
-
-export interface Conversation {
-  id: string;
-  channel: "pasabuy" | "traveler" | "host";
-  partner: ChatPartner;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-  type: string;
-  context: ChatContext;
-  messages: ChatMessage[];
-}
-
-const CHANNEL_LABELS: Record<Conversation["channel"], string> = {
+const CHANNEL_LABELS: Record<ChatChannel, string> = {
   pasabuy: "Pasabuy",
   traveler: "Traveler Swap",
   host: "Swap Host",
 };
 
-const CHANNEL_STYLES: Record<Conversation["channel"], string> = {
+const CHANNEL_STYLES: Record<ChatChannel, string> = {
   pasabuy: "bg-purple-50 border-purple-100 text-purple-700",
   traveler: "bg-emerald-50 border-emerald-100 text-emerald-700",
   host: "bg-blue-50 border-blue-100 text-blue-700",
 };
-
-// Mock Data for Conversations
-const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: "c1",
-    channel: "pasabuy",
-    partner: { name: "Miguel Travels", verified: true, status: "online" },
-    lastMessage: "I'm at Don Quijote now, sending pics of the matcha kit kats!",
-    timestamp: "2m ago",
-    unread: 2,
-    type: "buying",
-    context: { label: "Japan Pasabuy", status: "In Progress" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Hi Miguel! Are you still accepting orders for the Tokyo trip?",
-        time: "10:30 AM",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Yes! I have about 5kg capacity left. What do you need?",
-        time: "10:35 AM",
-      },
-      {
-        id: 3,
-        sender: "me",
-        text: "Looking for the Strawberry Matcha KitKats, about 5 packs.",
-        time: "10:36 AM",
-      },
-      {
-        id: 4,
-        sender: "them",
-        text: "Got it. I'm heading there now.",
-        time: "10:40 AM",
-      },
-      {
-        id: 5,
-        sender: "them",
-        text: "I'm at Don Quijote now, sending pics of the matcha kit kats!",
-        time: "Now",
-      },
-    ],
-  },
-  {
-    id: "c2",
-    channel: "pasabuy",
-    partner: { name: "Sarah FA", verified: true, status: "offline" },
-    lastMessage: "Payment received via Escrow. I will ship this on Monday.",
-    timestamp: "1d ago",
-    unread: 0,
-    type: "buying",
-    context: { label: "Olive Young Order", status: "Paid" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Payment sent for the serum!",
-        time: "Yesterday",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Payment received via Escrow. I will ship this on Monday.",
-        time: "Yesterday",
-      },
-    ],
-  },
-  {
-    id: "trav-chat-miguel",
-    channel: "traveler",
-    partner: { name: "Miguel R.", verified: true, status: "online" },
-    lastMessage: "I can grab the Switch OLED today—still want the neon one?",
-    timestamp: "Just now",
-    unread: 0,
-    type: "traveler",
-    context: { label: "Traveler Swap", status: "Active", route: "NRT ➝ MNL" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Hi Miguel! Can you bitbit a Switch OLED for a keyboard kit swap?",
-        time: "10:03 AM",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "I can grab one later. Need it in neon or white?",
-        time: "10:05 AM",
-      },
-      {
-        id: 3,
-        sender: "me",
-        text: "Neon please! I can add Sagada beans to the kapalit bundle.",
-        time: "10:07 AM",
-      },
-    ],
-  },
-  {
-    id: "trav-chat-angela",
-    channel: "traveler",
-    partner: { name: "Angela K.", verified: true, status: "online" },
-    lastMessage: "Laneige sets back in stock—locking your slot.",
-    timestamp: "8m ago",
-    unread: 1,
-    type: "traveler",
-    context: { label: "Traveler Swap", status: "Confirming", route: "ICN ➝ CEB" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Hi Angela! Still open for Laneige + Gentle Monster request?",
-        time: "9:15 AM",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Yes! Laneige restocked. Gentle Monster might need preorder though.",
-        time: "9:18 AM",
-      },
-    ],
-  },
-  {
-    id: "trav-chat-omar",
-    channel: "traveler",
-    partner: { name: "Omar D.", verified: true, status: "offline" },
-    lastMessage: "Send your kapalit list so I can finalize before flying.",
-    timestamp: "1h ago",
-    unread: 0,
-    type: "traveler",
-    context: { label: "Traveler Swap", status: "Packing", route: "DXB ➝ MNL ➝ DVO" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Need IKEA organizers + Bateel dates. Kapalit would be smart home plugs.",
-        time: "8:05 AM",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Copy! Send kapalit list before I check in luggage.",
-        time: "8:40 AM",
-      },
-    ],
-  },
-  {
-    id: "trav-chat-sari",
-    channel: "traveler",
-    partner: { name: "Sari Express Crew", verified: true, status: "online" },
-    lastMessage: "Bulk pickup window is 3-4PM daily at T3 curbside.",
-    timestamp: "20m ago",
-    unread: 3,
-    type: "traveler",
-    context: { label: "Traveler Swap", status: "Dispatching", route: "NAIA loop" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Can you grab 5 balikbayan boxes + snacks this afternoon?",
-        time: "7:55 AM",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Yes, drop kapalit offers in thread by lunch.",
-        time: "8:10 AM",
-      },
-    ],
-  },
-  {
-    id: "trav-chat-lena",
-    channel: "traveler",
-    partner: { name: "Lena V.", verified: false, status: "online" },
-    lastMessage: "Keychron restocked! Want me to reserve one?",
-    timestamp: "45m ago",
-    unread: 0,
-    type: "traveler",
-    context: { label: "Traveler Swap", status: "Sourcing", route: "SFO ➝ LAX ➝ MNL" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Need Keychron switches + record sleeves. Can swap handmade totes.",
-        time: "7:30 AM",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Keychron restocked! Want me to reserve one?",
-        time: "7:45 AM",
-      },
-    ],
-  },
-  {
-    id: "swap-chat-sarah",
-    channel: "host",
-    partner: { name: "Sarah J.", verified: true, status: "online" },
-    lastMessage: "Post your pastry bundle offer so I can lock the slot.",
-    timestamp: "5m ago",
-    unread: 1,
-    type: "buying",
-    context: { label: "Swap Thread", status: "Bidding", productTag: "sakura-tumbler", productName: "Limited Starbucks Sakura Tumbler 2024" },
-    messages: [
-      {
-        id: 1,
-        sender: "them",
-        text: "Hi! Saw your bid for brownies + service hour. Please comment on the listing so others can see.",
-        time: "4:40 PM",
-      },
-      {
-        id: 2,
-        sender: "me",
-        text: "Done! Added details + meetup availability.",
-        time: "4:42 PM",
-      },
-      {
-        id: 3,
-        sender: "them",
-        text: "Great. I tagged you on the comments—once we hit 15 slots I'll confirm here.",
-        time: "Now",
-      },
-    ],
-  },
-  {
-    id: "swap-chat-mike",
-    channel: "host",
-    partner: { name: "Mike T.", verified: true, status: "offline" },
-    lastMessage: "Meetup still at Greenbelt, Saturday 4PM?",
-    timestamp: "2h ago",
-    unread: 0,
-    type: "buying",
-    context: { label: "Swap Thread", status: "Negotiating", productTag: "gentle-monster", productName: "Gentle Monster Sunglasses (Rick 01)" },
-    messages: [
-      {
-        id: 1,
-        sender: "me",
-        text: "Can throw in 2hrs styling services for the Rick 01 frame.",
-        time: "2h ago",
-      },
-      {
-        id: 2,
-        sender: "them",
-        text: "Noted. Meetup still Greenbelt Saturday 4PM?",
-        time: "2h ago",
-      },
-    ],
-  },
-];
 
 const TAB_OPTIONS = [
   { id: "all", label: "All Chats" },
@@ -315,9 +34,13 @@ const TAB_OPTIONS = [
 ] as const;
 
 export const MessagesPage: React.FC = () => {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [inputText, setInputText] = useState<string>("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const location = useLocation();
   const routeState = location.state as {
     conversationId?: string;
@@ -328,24 +51,27 @@ export const MessagesPage: React.FC = () => {
   const highlightedProductTag = routeState?.productTag ?? routeState?.linkedTag ?? null;
 
   useEffect(() => {
+    chatService.getConversations().then((data) => {
+      setConversations(data);
+    });
+  }, []);
+
+  useEffect(() => {
     const { conversationId, chatType, linkedTag } = routeState ?? {};
     let timeoutId: number | undefined;
 
     if (conversationId) {
-      const linkedConversation = MOCK_CONVERSATIONS.find((chat) => chat.id === conversationId);
-      if (linkedConversation) {
-        timeoutId = window.setTimeout(() => {
-          setActiveChatId(linkedConversation.id);
-          setActiveTab(chatType ?? linkedConversation.channel ?? "all");
-        }, 0);
-      }
+      timeoutId = window.setTimeout(() => {
+        setActiveChatId(conversationId);
+        setActiveTab(chatType ?? "all");
+      }, 0);
       return () => {
         if (timeoutId) window.clearTimeout(timeoutId);
       };
     }
 
-    if (linkedTag) {
-      const linkedByTag = MOCK_CONVERSATIONS.find((chat) => chat.context?.label === linkedTag);
+    if (linkedTag && conversations.length > 0) {
+      const linkedByTag = conversations.find((chat) => chat.context?.label === linkedTag);
       if (linkedByTag) {
         timeoutId = window.setTimeout(() => {
           setActiveChatId(linkedByTag.id);
@@ -368,12 +94,50 @@ export const MessagesPage: React.FC = () => {
         window.clearTimeout(timeoutId);
       }
     };
-  }, [routeState]);
+  }, [routeState, conversations]);
 
-  const activeChat = MOCK_CONVERSATIONS.find((c) => c.id === activeChatId);
+  const activeChat = conversations.find((c) => c.id === activeChatId);
+
+  // Auto-scroll when messages change in active chat
+  useEffect(() => {
+    if (activeChatId && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [activeChat?.messages.length, activeChatId]);
+
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inputText.trim() || !activeChatId) return;
+
+    const textToSend = inputText;
+    setInputText("");
+
+    try {
+      const response = await chatService.sendMessage({
+        conversationId: activeChatId,
+        text: textToSend,
+      });
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c.id === activeChatId) {
+            return {
+              ...c,
+              lastMessage: response.message.text,
+              timestamp: "Just now",
+              messages: [...c.messages, response.message],
+            };
+          }
+          return c;
+        })
+      );
+    } catch (err) {
+      console.error("Failed to send message", err);
+    }
+  };
 
   // Filter conversations
-  const filteredConversations = MOCK_CONVERSATIONS.filter((chat) => {
+  const filteredConversations = conversations.filter((chat) => {
     const matchesTab = activeTab === "all" || chat.channel === activeTab;
     const matchesSearch =
       searchQuery.trim().length === 0 ||
@@ -394,7 +158,7 @@ export const MessagesPage: React.FC = () => {
             <p className="text-xs text-slate-500">Coordinate trades and pasabuy requests</p>
           </div>
           <div className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold">
-            {MOCK_CONVERSATIONS.filter((c) => c.unread > 0).length} New
+            {conversations.filter((c) => c.unread > 0).length} New
           </div>
         </div>
 
@@ -590,7 +354,7 @@ export const MessagesPage: React.FC = () => {
                 }
               `}
             >
-              <p className="leading-relaxed">{msg.text}</p>
+              <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
               <div
                 className={`text-[10px] mt-1 flex items-center justify-end gap-1 ${
                   msg.sender === "me" ? "text-emerald-100" : "text-slate-400"
@@ -604,11 +368,12 @@ export const MessagesPage: React.FC = () => {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
       <div className="bg-white border-t border-slate-200 p-3 pb-6 safe-area-bottom">
-        <div className="flex items-center gap-2 max-w-xl mx-auto">
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-xl mx-auto">
           <button 
             type="button"
             className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
@@ -619,6 +384,8 @@ export const MessagesPage: React.FC = () => {
           <div className="flex-1 bg-slate-100 rounded-2xl flex items-center gap-2 px-4 py-2 border border-transparent focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
             <input
               type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
               placeholder="Type a message..."
               className="bg-transparent w-full text-sm text-slate-900 focus:outline-none py-1 placeholder:text-slate-400"
             />
@@ -631,13 +398,18 @@ export const MessagesPage: React.FC = () => {
             </button>
           </div>
           <button 
-            type="button"
-            className="p-3 bg-emerald-600 text-white rounded-full shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition-colors active:scale-95 cursor-pointer"
+            type="submit"
+            disabled={!inputText.trim()}
+            className={`p-3 rounded-full shadow-md transition-all active:scale-95 cursor-pointer ${
+              inputText.trim()
+                ? "bg-emerald-600 text-white shadow-emerald-600/20 hover:bg-emerald-700"
+                : "bg-slate-200 text-slate-400 shadow-none cursor-not-allowed"
+            }`}
             aria-label="Send message"
           >
             <Send size={18} className="ml-0.5" />
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

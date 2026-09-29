@@ -13,6 +13,8 @@ import { MOCK_PRODUCTS } from '@/data/browseListings';
 import { formatPHP } from '@/utils';
 import { BrowseProduct } from '@/types/browse';
 import { TravelerProfile } from '@/types/travelers';
+import { GroupOrder } from '@/types/groupOrder';
+import { MOCK_GOS } from '@/data';
 
 const BID_STATUS_META = {
     accepted: { label: 'Accepted', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
@@ -29,9 +31,15 @@ interface ProductDetailModalProps {
     product: BrowseProduct | null;
     onClose: () => void;
     onMessageHost?: (product: BrowseProduct) => void;
+    onJoinGroupOrder?: (product: BrowseProduct) => void;
 }
 
-const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose, onMessageHost }) => {
+const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ 
+    product, 
+    onClose, 
+    onMessageHost,
+    onJoinGroupOrder,
+}) => {
     if (!product) return null;
 
     const isGroupOrder = product.swapType === 'Group Order';
@@ -187,10 +195,15 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                         Message Host
                     </Button>
                     <Button 
-                        variant="default"
+                        variant={isGroupOrder ? "emerald" : "default"}
                         className="w-full h-12 text-sm font-bold shadow-lg shadow-slate-900/10"
+                        onClick={() => {
+                            if (isGroupOrder) {
+                                onJoinGroupOrder?.(product);
+                            }
+                        }}
                     >
-                        {isGroupOrder ? "Join Group Order" : isPasabuy ? "Request to Buy" : "Buy Now"}
+                        {isGroupOrder ? "Join Group Order (Ambag)" : isPasabuy ? "Request to Buy" : "Buy Now"}
                     </Button>
                 </div>
             </div>
@@ -346,10 +359,10 @@ export interface BrowsePageProps {
     setIsPostTripOpen?: (open: boolean) => void;
     mode?: string;
     setMode?: (mode: string) => void;
-    setSelectedGO?: (go: unknown) => void;
+    setSelectedGO?: (go: GroupOrder | null) => void;
 }
 
-export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen }) => {
+export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen, setSelectedGO }) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -367,6 +380,25 @@ export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen }) => 
     const LOCATIONS = ["All", "Nearby (<5km)", "Quezon City", "Makati", "BGC", "Manila"];
     const SWAP_TYPES = ["All", "Group Order", "Pasabuy", "On Hand"];
     const PRODUCT_TYPES = ["All", "Food", "Fashion", "Beauty", "Gadgets", "Home"];
+
+    const handleJoinGroupOrder = (product: BrowseProduct) => {
+        setSelectedProduct(null);
+        const matched = MOCK_GOS.find(
+            (go) => go.title.toLowerCase().includes(product.title.toLowerCase()) || go.category === product.type
+        ) || {
+            id: `go_${product.id}`,
+            title: product.title,
+            manager: { name: product.user.name, verified: product.user.verified },
+            region: product.location,
+            status: 'open',
+            deadline: product.deadline,
+            category: product.type,
+            items: [{ name: product.title, price: product.price }],
+            pooling: product.pooling || { current: 12, target: 20, baseFee: 150, minFee: 50 },
+            biases: ["Standard Edition", "Deluxe Pack", "Collector's Box"],
+        };
+        setSelectedGO?.(matched);
+    };
 
     const handleMessageTraveler = async (traveler: TravelerProfile) => {
         if (!traveler?.conversationId) return;
@@ -418,6 +450,7 @@ export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen }) => 
                 product={selectedProduct}
                 onClose={() => setSelectedProduct(null)}
                 onMessageHost={handleMessageHost}
+                onJoinGroupOrder={handleJoinGroupOrder}
             />
             <TravelerDetailModal 
                 traveler={selectedTraveler} 

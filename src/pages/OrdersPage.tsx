@@ -1,146 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Package, Clock, CheckCircle, MoreHorizontal, Star, X } from 'lucide-react';
+import { Search, Package, Clock, CheckCircle, MoreHorizontal, Star, X, ArrowRight } from 'lucide-react';
 import { Card, Avatar, Button } from '@/components/ui';
 import { CURRENT_USER, UserProfile } from '@/data';
-
-export interface OrderUser {
-  id: string;
-  name: string;
-  avatar: string;
-}
-
-export interface OrderProduct {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-  location: string;
-}
-
-export interface OrderTransaction {
-  id: string;
-  conversationId: string;
-  status: 'ongoing' | 'past';
-  step: string;
-  product: OrderProduct;
-  host: OrderUser;
-  swapper: OrderUser;
-  deadline: string;
-}
-
-export interface SavedRating {
-  value: number;
-  comment: string;
-  createdAt: string;
-}
-
-const getUsers = (user?: UserProfile | null): Record<string, OrderUser> => ({
-  current: {
-    id: user?.uid || CURRENT_USER.uid,
-    name: user?.displayName || CURRENT_USER.displayName,
-    avatar: user?.avatar || CURRENT_USER.avatar,
-  },
-  sarah: {
-    id: 'u201',
-    name: 'Sarah J.',
-    avatar: 'https://i.pravatar.cc/150?u=1',
-  },
-  mike: {
-    id: 'u202',
-    name: 'Mike R.',
-    avatar: 'https://i.pravatar.cc/150?u=2',
-  },
-  jessica: {
-    id: 'u203',
-    name: 'Jessica L.',
-    avatar: 'https://i.pravatar.cc/150?u=3',
-  },
-  david: {
-    id: 'u204',
-    name: 'David K.',
-    avatar: 'https://i.pravatar.cc/150?u=4',
-  },
-});
-
-const getMockTransactions = (user?: UserProfile | null): OrderTransaction[] => {
-  const USERS = getUsers(user);
-  return [
-    {
-      id: "tx_1",
-      conversationId: "c1",
-      status: "ongoing",
-      step: "Coordinating Swap",
-      product: {
-        id: 1,
-        title: "Limited Starbucks Sakura Tumbler 2024",
-        price: 1250,
-        image: "https://images.unsplash.com/photo-1570784332176-fdd73da66f03?auto=format&fit=crop&q=80&w=600",
-        location: "Tokyo, JP",
-      },
-      host: USERS.current,
-      swapper: USERS.sarah,
-      deadline: "2024-03-25"
-    },
-    {
-      id: "tx_2",
-      conversationId: "c2",
-      status: "ongoing",
-      step: "In Transit to Meet-up",
-      product: {
-        id: 3,
-        title: "Don Quijote Matcha KitKats (12 Pack)",
-        price: 450,
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ318pT1StZ1ZlM4fkIoI6SfcTCGdi_9TG7-Q&s",
-        location: "Osaka, JP",
-      },
-      host: USERS.mike,
-      swapper: USERS.current,
-      deadline: "2024-03-22"
-    },
-    {
-      id: "tx_3",
-      conversationId: "c1",
-      status: "past",
-      step: "Swap Completed",
-      product: {
-        id: 5,
-        title: "Gentle Monster Sunglasses",
-        price: 15200,
-        image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=600",
-        location: "Seoul, KR",
-      },
-      host: USERS.jessica,
-      swapper: USERS.current,
-      deadline: "2024-02-10"
-    },
-    {
-      id: "tx_4",
-      conversationId: "c2",
-      status: "past",
-      step: "Swap Cancelled",
-      product: {
-        id: 8,
-        title: "Olive Young Skin Care Set",
-        price: 3200,
-        image: "https://sugarpeachesloves.net/wp-content/uploads/2022/08/Olive-Young-Global-5-step-skincare-routine-scaled.jpeg",
-        location: "Seoul, KR",
-      },
-      host: USERS.current,
-      swapper: USERS.david,
-      deadline: "2024-01-15"
-    }
-  ];
-};
+import { OrderTransaction, SavedRating, OrderStep } from '@/types/orders';
+import { orderService } from '@/services/orderService';
 
 export interface OrdersPageProps {
   user?: UserProfile | null;
 }
 
 export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
-  const MOCK_TRANSACTIONS = getMockTransactions(user);
   const navigate = useNavigate();
   const location = useLocation();
+  const [transactions, setTransactions] = useState<OrderTransaction[]>([]);
   const [travelerTab, setTravelerTab] = useState<'ongoing' | 'past'>('ongoing');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,9 +21,15 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
   const [ratingValue, setRatingValue] = useState<number>(0);
   const [ratingComment, setRatingComment] = useState<string>('');
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
+  const [statusActionMessage, setStatusActionMessage] = useState<string | null>(null);
 
   const locationState = location.state as { from?: string } | null;
   const fromHostTrip = locationState?.from === 'hostTrip';
+
+  useEffect(() => {
+    orderService.getOrders(user).then(setTransactions);
+    orderService.getRatings().then(setSavedRatings);
+  }, [user]);
 
   const filteredTransactions = (() => {
     const normalized = searchQuery.trim().toLowerCase();
@@ -159,7 +38,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
       t.host.name.toLowerCase().includes(normalized) ||
       t.swapper.name.toLowerCase().includes(normalized);
 
-    return MOCK_TRANSACTIONS.filter((t) => {
+    return transactions.filter((t) => {
       if (normalized) {
         return matchesQuery(t);
       }
@@ -169,6 +48,27 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
 
   const isSearching = searchQuery.trim().length > 0;
 
+  const handleUpdateStatus = async (tx: OrderTransaction) => {
+    const nextStep = orderService.getNextStep(tx.step);
+    if (nextStep === tx.step) return;
+
+    try {
+      const updated = await orderService.updateOrderStatus({
+        orderId: tx.id,
+        nextStep,
+      });
+
+      setTransactions((prev) =>
+        prev.map((item) => (item.id === updated.id ? updated : item))
+      );
+
+      setStatusActionMessage(`Order ${tx.id.toUpperCase()} updated to "${nextStep}"`);
+      setTimeout(() => setStatusActionMessage(null), 3000);
+    } catch (err) {
+      console.error("Failed to update status", err);
+    }
+  };
+
   const handleOpenRating = (tx: OrderTransaction) => {
     const existing = savedRatings[tx.id];
     setRatingModalTx(tx);
@@ -176,21 +76,31 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
     setRatingComment(existing?.comment || '');
   };
 
-  const handleSubmitRating = () => {
+  const handleSubmitRating = async () => {
     if (!ratingModalTx || ratingValue === 0) return;
 
-    setSavedRatings((prev) => ({
-      ...prev,
-      [ratingModalTx.id]: {
+    const currentUserId = user?.uid || CURRENT_USER.uid;
+    const targetUserId = ratingModalTx.host.id === currentUserId ? ratingModalTx.swapper.id : ratingModalTx.host.id;
+
+    try {
+      const saved = await orderService.submitRating({
+        orderId: ratingModalTx.id,
+        targetUserId,
         value: ratingValue,
         comment: ratingComment,
-        createdAt: new Date().toISOString(),
-      },
-    }));
+      });
 
-    setRatingModalTx(null);
-    setRatingValue(0);
-    setRatingComment('');
+      setSavedRatings((prev) => ({
+        ...prev,
+        [ratingModalTx.id]: saved,
+      }));
+
+      setRatingModalTx(null);
+      setRatingValue(0);
+      setRatingComment('');
+    } catch (err) {
+      console.error("Failed to submit rating", err);
+    }
   };
 
   const handleCloseRating = () => {
@@ -216,6 +126,13 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
             <Search size={18} />
           </button>
         </div>
+
+        {statusActionMessage && (
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs font-semibold text-emerald-800 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+            <span>{statusActionMessage}</span>
+            <CheckCircle size={16} className="text-emerald-600" />
+          </div>
+        )}
 
         {fromHostTrip && (
           <div className="mt-2 rounded-2xl bg-emerald-50 border border-emerald-100 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
@@ -269,7 +186,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 cursor-pointer ${travelerTab === 'ongoing' && !isSearching ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             disabled={isSearching}
           >
-            Ongoing Orders ({MOCK_TRANSACTIONS.filter(t => t.status === 'ongoing').length})
+            Ongoing Orders ({transactions.filter(t => t.status === 'ongoing').length})
           </button>
           <button
             type="button"
@@ -277,7 +194,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 z-10 cursor-pointer ${travelerTab === 'past' && !isSearching ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             disabled={isSearching}
           >
-            Past History ({MOCK_TRANSACTIONS.filter(t => t.status === 'past').length})
+            Past History ({transactions.filter(t => t.status === 'past').length})
           </button>
         </div>
 
@@ -304,6 +221,8 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
               const isSwapper = tx.swapper.id === currentUserId;
               const existingRating = savedRatings[tx.id];
               const counterpartyName = isHost ? tx.swapper.name : tx.host.name;
+              const nextStep = orderService.getNextStep(tx.step);
+              const canAdvance = isHost && nextStep !== tx.step;
 
               return (
                 <Card key={tx.id} className="p-0 overflow-hidden group">
@@ -386,13 +305,26 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ user }) => {
 
                   {tx.status === 'ongoing' ? (
                     <div className="px-4 py-3 border-t border-slate-100 flex gap-2 bg-slate-50/30">
-                      <Button
-                        variant={isHost ? "default" : isSwapper ? "outline" : "secondary"}
-                        size="sm"
-                        className="flex-1"
-                      >
-                        {isHost ? 'Update Status' : isSwapper ? 'View Status' : 'View Details'}
-                      </Button>
+                      {isHost ? (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => handleUpdateStatus(tx)}
+                          disabled={!canAdvance}
+                        >
+                          <span>{tx.step === 'Coordinating Swap' ? 'Mark In Transit' : 'Mark Completed'}</span>
+                          <ArrowRight size={13} />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant={isSwapper ? "outline" : "secondary"}
+                          size="sm"
+                          className="flex-1 text-xs"
+                        >
+                          {isSwapper ? 'View Status' : 'View Details'}
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"

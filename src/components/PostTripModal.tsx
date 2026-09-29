@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, MapPin, AlertTriangle, Calendar, Plane } from 'lucide-react';
 import { Card, Button } from '@/components/ui';
+import { tripService } from '@/services/tripService';
 
 export interface PostTripModalProps {
   isOpen: boolean;
@@ -16,13 +17,28 @@ export const PostTripModal: React.FC<PostTripModalProps> = ({ isOpen, onClose, s
   const [capacityKg, setCapacityKg] = useState(20);
   const [pricePerKg, setPricePerKg] = useState(800);
   const [returnDate, setReturnDate] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handlePublish = () => {
-    showToast("Pasabuy trip posted! Track it under Pasabuys.");
-    onClose();
-    navigate("/orders", { state: { from: "hostTrip" } });
+  const handlePublish = async () => {
+    setIsSubmitting(true);
+    try {
+      await tripService.postTrip({
+        origin,
+        destination,
+        returnDate,
+        capacityKg,
+        pricePerKg,
+      });
+      showToast("Pasabuy trip posted! Track it under Pasabuys.");
+      onClose();
+      navigate("/orders", { state: { from: "hostTrip" } });
+    } catch {
+      showToast("Failed to post trip. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -149,9 +165,10 @@ export const PostTripModal: React.FC<PostTripModalProps> = ({ isOpen, onClose, s
         <Button 
           variant="default"
           onClick={handlePublish}
+          disabled={isSubmitting}
           className="mt-6 w-full h-12 shadow-lg shadow-slate-900/10 font-bold"
         >
-          Publish Trip & View Pasabuys
+          {isSubmitting ? "Publishing Trip..." : "Publish Trip & View Pasabuys"}
         </Button>
       </div>
     </div>

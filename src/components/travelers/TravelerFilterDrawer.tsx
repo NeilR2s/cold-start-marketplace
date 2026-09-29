@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { TravelerFilterState } from "../../types/travelers";
 import {
@@ -12,6 +13,7 @@ import {
   TRAVELER_ORIGINS,
 } from "../../constants/travelerFilters";
 import { TravelerFilterGroup } from "./TravelerFilterGroup";
+import { Button } from "@/components/ui";
 
 type TravelerFilterDrawerProps = {
   open: boolean;
@@ -26,33 +28,58 @@ const toggleValue = <T,>(values: T[], value: T) => (values.includes(value) ? val
 export function TravelerFilterDrawer({ open, filters, onChange, onClose, onReset }: TravelerFilterDrawerProps) {
   const setFilters = (payload: Partial<TravelerFilterState>) => onChange({ ...filters, ...payload });
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
   return (
-    <div className={`fixed inset-0 z-40 transition ${open ? "pointer-events-auto" : "pointer-events-none"}`}>
-      <div className={`absolute inset-0 bg-slate-900/60 transition-opacity ${open ? "opacity-100" : "opacity-0"}`} onClick={onClose} />
+    <div 
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="traveler-filters-title"
+    >
+      <div 
+        className="fixed inset-0" 
+        onClick={onClose} 
+        aria-hidden="true" 
+      />
       <aside
-        className={`absolute inset-x-0 bottom-0 flex max-h-[90vh] flex-col rounded-t-3xl bg-white p-5 shadow-2xl transition-transform ${
-          open ? "translate-y-0" : "translate-y-full"
-        }`}
+        className="relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-white p-5 shadow-2xl z-10 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-150"
       >
-        <header className="mb-4 flex items-center justify-between">
+        <header className="mb-4 flex items-center justify-between pb-2 border-b border-slate-100">
           <div>
-            <p className="text-xs font-semibold uppercase text-slate-500">Traveler Filters</p>
-            <h3 className="text-lg font-bold text-slate-900">Dial in the perfect bitbit partner</h3>
+            <p className="text-xs font-semibold uppercase text-emerald-600">Traveler Filters</p>
+            <h3 id="traveler-filters-title" className="text-lg font-bold text-slate-900">Dial in the perfect bitbit partner</h3>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full border border-slate-200 p-2">
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="rounded-full border border-slate-200 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            aria-label="Close filters"
+          >
             <X className="h-5 w-5" />
           </button>
         </header>
 
-        <div className="space-y-4 overflow-y-auto pb-32">
+        <div className="space-y-4 overflow-y-auto pr-1 pb-4">
           <TravelerFilterGroup title="Location Focus" subtitle="Multi-select">
             {TRAVELER_LOCATION_FILTERS.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setFilters({ locationFilters: toggleValue(filters.locationFilters, item) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.locationFilters.includes(item) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.locationFilters.includes(item) ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {item}
@@ -60,66 +87,37 @@ export function TravelerFilterDrawer({ open, filters, onChange, onClose, onReset
             ))}
           </TravelerFilterGroup>
 
-          <TravelerFilterGroup title="Origin (Travel Source)" subtitle="Select all that apply">
+          <TravelerFilterGroup title="Origin" subtitle="Where travelers are flying from">
             {TRAVELER_ORIGINS.map((origin) => (
               <button
                 key={origin}
                 type="button"
                 onClick={() => setFilters({ origins: toggleValue(filters.origins, origin) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.origins.includes(origin) ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 text-slate-600"
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.origins.includes(origin) ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {origin}
               </button>
             ))}
-            <input
-              type="text"
-              value={filters.customOrigin ?? ""}
-              placeholder="Custom country"
-              onChange={(event) => setFilters({ customOrigin: event.target.value })}
-              className="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
-            />
           </TravelerFilterGroup>
 
-          <TravelerFilterGroup title="What they can bitbit" subtitle="Tap to toggle">
-            {BITBIT_OPTIONS.map((option) => (
+          <TravelerFilterGroup title="Bitbit focus">
+            {BITBIT_OPTIONS.map((item) => (
               <button
-                key={option}
+                key={item}
                 type="button"
-                onClick={() => setFilters({ bitbit: toggleValue(filters.bitbit, option) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.bitbit.includes(option) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
+                onClick={() => setFilters({ bitbit: toggleValue(filters.bitbit, item) })}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.bitbit.includes(item) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
                 }`}
               >
-                {option}
-              </button>
-            ))}
-            <input
-              type="text"
-              value={filters.customBitbit ?? ""}
-              placeholder="Custom bitbit request"
-              onChange={(event) => setFilters({ customBitbit: event.target.value })}
-              className="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
-            />
-          </TravelerFilterGroup>
-
-          <TravelerFilterGroup title="Restrictions">
-            {RESTRICTION_OPTIONS.map((restriction) => (
-              <button
-                key={restriction}
-                type="button"
-                onClick={() => setFilters({ restrictions: toggleValue(filters.restrictions, restriction) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.restrictions.includes(restriction) ? "border-amber-500 bg-amber-50 text-amber-700" : "border-slate-200 text-slate-600"
-                }`}
-              >
-                {restriction}
+                {item}
               </button>
             ))}
           </TravelerFilterGroup>
 
-          <TravelerFilterGroup title="Weight limit (kg slider)" subtitle="Show travelers who can carry at least this much">
+          <TravelerFilterGroup title="Capacity available">
             <div className="w-full">
               <input
                 type="range"
@@ -145,7 +143,7 @@ export function TravelerFilterDrawer({ open, filters, onChange, onClose, onReset
                 const value = event.target.value;
                 setFilters({ minQuantityLimit: value ? Math.min(Number(value), MAX_QUANTITY_LIMIT) : undefined });
               }}
-              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
           </TravelerFilterGroup>
 
@@ -155,8 +153,8 @@ export function TravelerFilterDrawer({ open, filters, onChange, onClose, onReset
                 key={pref}
                 type="button"
                 onClick={() => setFilters({ kapalit: toggleValue(filters.kapalit, pref) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.kapalit.includes(pref) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.kapalit.includes(pref) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {pref}
@@ -170,8 +168,8 @@ export function TravelerFilterDrawer({ open, filters, onChange, onClose, onReset
                 key={type}
                 type="button"
                 onClick={() => setFilters({ travelTypes: toggleValue(filters.travelTypes, type) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.travelTypes.includes(type) ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 text-slate-600"
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.travelTypes.includes(type) ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {type}
@@ -185,30 +183,48 @@ export function TravelerFilterDrawer({ open, filters, onChange, onClose, onReset
                 key={mode}
                 type="button"
                 onClick={() => setFilters({ swapModes: toggleValue(filters.swapModes, mode) })}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  filters.swapModes.includes(mode) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.swapModes.includes(mode) ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {mode}
               </button>
             ))}
           </TravelerFilterGroup>
+
+          <TravelerFilterGroup title="Restrictions">
+            {RESTRICTION_OPTIONS.map((flag) => (
+              <button
+                key={flag}
+                type="button"
+                onClick={() => setFilters({ restrictions: toggleValue(filters.restrictions, flag) })}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
+                  filters.restrictions.includes(flag) ? "border-amber-500 bg-amber-50 text-amber-700" : "border-slate-200 text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {flag}
+              </button>
+            ))}
+          </TravelerFilterGroup>
         </div>
 
-        <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex items-center gap-3 rounded-t-2xl border-t border-slate-100 bg-white/95 p-4">
-          <button type="button" className="flex-1 rounded-full border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-600" onClick={onReset}>
+        <div className="flex items-center gap-3 border-t border-slate-100 bg-white pt-4">
+          <Button 
+            variant="outline"
+            className="flex-1"
+            onClick={onReset}
+          >
             Reset
-          </button>
-          <button
-            type="button"
-            className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-sm font-semibold text-white"
+          </Button>
+          <Button 
+            variant="emerald"
+            className="flex-1 font-bold"
             onClick={onClose}
           >
             Show travelers
-          </button>
+          </Button>
         </div>
       </aside>
     </div>
   );
 }
-
