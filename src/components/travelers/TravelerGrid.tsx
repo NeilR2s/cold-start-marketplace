@@ -31,7 +31,7 @@ export function TravelerGrid({
 
   return (
     <div className="space-y-5">
-      <div className={layout === "grid" ? "grid gap-4 sm:grid-cols-2" : "flex flex-col gap-4"}>
+      <div className={layout === "grid" ? "grid gap-5 sm:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-4"}>
         {travelers.map((traveler) => (
           <TravelerCard
             key={traveler.id}

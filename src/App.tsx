@@ -12,6 +12,7 @@ import {
 
 import { getLocalProfile } from "@/utils/profileStorage";
 import { AppBottomNav, NavItem } from "@/components/ui/bottom-nav";
+import { Header } from "@/components/ui/header";
 import { GroupOrder, UserProfile } from "@/data";
 
 // Import Modals
@@ -88,6 +89,18 @@ export default function BitbitApp() {
         </div>
       )}
 
+      {/* Top Header - with responsive desktop navigation & mobile branding */}
+      {!isWelcomePage && (
+        <Header 
+          userName={user.displayName}
+          isVerified={true}
+          currentPath={location.pathname}
+          onNavigate={navigate}
+          onOpenPostTrip={() => setIsPostTripOpen(true)}
+          navItems={navItems}
+        />
+      )}
+
       {/* Main app content with unified single-route management */}
       {isWelcomePage ? (
         <div className="flex-1 w-full">
@@ -96,7 +109,7 @@ export default function BitbitApp() {
           </Routes>
         </div>
       ) : (
-        <main className="flex-1 w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
+        <main className="flex-1 w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-10">
           <Routes>
             <Route 
               path="/home" 
@@ -144,13 +157,13 @@ export default function BitbitApp() {
         </main>
       )}
 
-      {/* Bottom Navigation Bar - only rendered for authenticated/app views */}
+      {/* Bottom Navigation Bar - only rendered for mobile/small tablet screens */}
       {!isWelcomePage && (
         <nav 
           aria-label="Primary Navigation"
-          className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.03)]"
+          className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.03)]"
         >
-          <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
+          <div className="mx-auto w-full max-w-md">
             <AppBottomNav items={navItems} value={location.pathname} onChange={navigate} />
           </div>
         </nav>

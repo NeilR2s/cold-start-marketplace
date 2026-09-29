@@ -5,15 +5,13 @@ import { SortDropdown } from "../components/explore/SortDropdown";
 import { FilterPills } from "../components/explore/FilterPills";
 import { FilterDrawer } from "../components/explore/FilterDrawer";
 import { SwapGrid } from "../components/explore/SwapGrid";
+import { SwapDetailModal } from "../components/explore/SwapDetailModal";
 import { SWAP_LISTINGS } from "../data/swapListings";
 import { buildFilterPills, defaultFilters, filterListings, sortListings } from "../utils/exploreFilters";
-import { FilterState, SwapSortOption } from "../types/explore";
+import { FilterState, SwapListing, SwapSortOption } from "../types/explore";
 import { SWAP_SORT_OPTIONS } from "../constants/exploreFilters";
 import { TravelerPage } from "../components/travelers/TravelerPage";
-import { Button } from "@/components/ui";
 import { GroupOrder, MOCK_GOS } from "@/data";
-
-const INITIAL_VISIBLE = 4;
 
 type TravelerAvailability = {
     active: boolean;
@@ -40,19 +38,16 @@ const ExplorePage = ({ travelerAvailability, onJoinGroupOrder }: ExplorePageProp
     const [filters, setFilters] = useState<FilterState>(defaultFilters);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [layout, setLayout] = useState<"grid" | "list">("grid");
-    const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+    const [selectedSwapListing, setSelectedSwapListing] = useState<SwapListing | null>(null);
     const initialTab = isExploreLocationState(location.state) && location.state.activeTab === "travelers" ? "travelers" : "swaps";
     const [activeTab, setActiveTab] = useState<"swaps" | "travelers">(initialTab);
 
     const filteredListings = useMemo(() => filterListings(SWAP_LISTINGS, filters), [filters]);
     const sortedListings = useMemo(() => sortListings(filteredListings, filters.sort), [filteredListings, filters.sort]);
-    const visibleListings = sortedListings.slice(0, visibleCount);
-    const hasMore = visibleCount < sortedListings.length;
 
     const pills = buildFilterPills(filters);
 
     const updateFilters = (next: FilterState) => {
-        setVisibleCount(INITIAL_VISIBLE);
         setFilters(next);
     };
 
@@ -126,70 +121,65 @@ const ExplorePage = ({ travelerAvailability, onJoinGroupOrder }: ExplorePageProp
     };
 
     const renderSwapView = () => (
-        <div className="space-y-5 pt-2">
-            <header className="space-y-3 px-4">
-                <p className="text-xs font-semibold uppercase text-emerald-600">Swap marketplace</p>
-                <h2 className="text-xl font-bold text-slate-900">Discover active barter-only listings.</h2>
-                <p className="text-sm text-slate-500">
-                    Filter by barter type, kapalit, exchange method, and tags to find your next swap.
-                </p>
+        <div className="space-y-4 pt-1">
+            {/* Search & Filter Toolbar */}
+            <section className="space-y-3 px-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                        <input
+                            value={filters.query}
+                            onChange={(event) => handleSearchChange(event.target.value)}
+                            placeholder="Search swap items, kapalit, tags..."
+                            className="w-full h-10 sm:h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-xs transition-all"
+                        />
+                    </div>
 
-                <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
-                    <Search className="h-5 w-5 text-slate-400" />
-                    <input
-                        value={filters.query}
-                        onChange={(event) => handleSearchChange(event.target.value)}
-                        placeholder="Search swap items, kapalit, tags..."
-                        className="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                    />
-                </label>
-            </header>
+                    <div className="flex items-center gap-2">
+                        <SortDropdown
+                            value={filters.sort}
+                            options={SWAP_SORT_OPTIONS}
+                            onChange={handleSortChange}
+                            onOpenFilters={() => setDrawerOpen(true)}
+                            activeFilterCount={pills.length}
+                        />
 
-            <section className="space-y-4 px-4">
-                <div className="flex flex-col gap-3">
-                    <SortDropdown
-                        value={filters.sort}
-                        options={SWAP_SORT_OPTIONS}
-                        onChange={handleSortChange}
-                        onOpenFilters={() => setDrawerOpen(true)}
-                    />
-                    <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-                        <Button
-                            type="button"
-                            variant={layout === "grid" ? "default" : "ghost"}
-                            size="sm"
-                            pill
-                            className={`h-8 px-3 ${layout === "grid" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
-                            onClick={() => setLayout("grid")}
-                            aria-label="Grid view"
-                        >
-                            <LayoutGrid className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant={layout === "list" ? "default" : "ghost"}
-                            size="sm"
-                            pill
-                            className={`h-8 px-3 ${layout === "list" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
-                            onClick={() => setLayout("list")}
-                            aria-label="List view"
-                        >
-                            <Rows3 className="h-4 w-4" />
-                        </Button>
+                        {/* View Switcher */}
+                        <div className="h-10 sm:h-11 flex items-center gap-0.5 bg-slate-100 p-1 rounded-xl border border-slate-200/60 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setLayout("grid")}
+                                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                                    layout === "grid" ? "bg-white text-emerald-700 shadow-xs font-bold" : "text-slate-400 hover:text-slate-700"
+                                }`}
+                                aria-label="Grid view"
+                            >
+                                <LayoutGrid className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setLayout("list")}
+                                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                                    layout === "list" ? "bg-white text-emerald-700 shadow-xs font-bold" : "text-slate-400 hover:text-slate-700"
+                                }`}
+                                aria-label="List view"
+                            >
+                                <Rows3 className="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <FilterPills pills={pills} onRemove={handlePillRemove} onClearAll={handleClearAll} />
             </section>
 
-            <section className="px-4">
+            <section className="px-1">
                 <SwapGrid
-                    listings={visibleListings}
+                    listings={sortedListings}
                     layout={layout}
-                    onLoadMore={() => setVisibleCount((prev) => prev + 4)}
-                    hasMore={hasMore}
                     onChatHost={handleChatHost}
                     onJoinGroupSwap={handleJoinGroupSwap}
+                    onViewListing={(listing) => setSelectedSwapListing(listing)}
                 />
             </section>
 
@@ -200,46 +190,61 @@ const ExplorePage = ({ travelerAvailability, onJoinGroupOrder }: ExplorePageProp
                 onClose={() => setDrawerOpen(false)}
                 onReset={() => updateFilters(defaultFilters)}
             />
+
+            <SwapDetailModal
+                listing={selectedSwapListing}
+                onClose={() => setSelectedSwapListing(null)}
+                onChatHost={handleChatHost}
+                onJoinGroupSwap={handleJoinGroupSwap}
+            />
         </div>
     );
 
     return (
-        <div className="space-y-6 pb-24 pt-6">
-            <section className="space-y-4 px-4">
+        <div className="space-y-5 pb-24 md:pb-8 pt-4 md:pt-6 animate-in fade-in">
+            {/* Standardized Header matching /messages and /orders conventions */}
+            <div className="flex justify-between items-center px-1">
                 <div>
-                    <p className="text-xs font-semibold uppercase text-emerald-600">Explore Bitbit</p>
-                    <h1 className="text-2xl font-black text-slate-900">Choose your swap adventure.</h1>
-                    <p className="text-sm text-slate-500">Toggle between curated swap listings and the traveler network.</p>
+                    <h1 className="text-2xl font-bold text-slate-900">Explore</h1>
+                    <p className="text-xs text-slate-500">Discover active barter listings and verified traveler network</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 text-sm font-semibold">
-                    <Button
-                        type="button"
-                        variant={activeTab === "swaps" ? "default" : "ghost"}
-                        pill
-                        onClick={() => setActiveTab("swaps")}
-                        className={activeTab === "swaps" ? "bg-white text-slate-900 shadow-sm hover:bg-white" : "text-slate-500 hover:text-slate-900"}
-                    >
-                        Swap marketplace
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={activeTab === "travelers" ? "default" : "ghost"}
-                        pill
-                        onClick={() => setActiveTab("travelers")}
-                        className={activeTab === "travelers" ? "bg-white text-slate-900 shadow-sm hover:bg-white" : "text-slate-500 hover:text-slate-900"}
-                    >
-                        Traveler network
-                    </Button>
+                <div className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold">
+                    {activeTab === "swaps" ? `${filteredListings.length} Listings` : "Verified Network"}
                 </div>
-            </section>
+            </div>
 
+            {/* Standardized Segmented Tab Switcher matching /messages */}
+            <div className="flex p-1 bg-slate-200/60 rounded-xl overflow-x-auto no-scrollbar">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab("swaps")}
+                    className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap text-center ${
+                        activeTab === "swaps"
+                            ? "bg-white text-emerald-700 shadow-xs"
+                            : "text-slate-500 hover:text-slate-700"
+                    }`}
+                >
+                    Swap Marketplace
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab("travelers")}
+                    className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap text-center ${
+                        activeTab === "travelers"
+                            ? "bg-white text-emerald-700 shadow-xs"
+                            : "text-slate-500 hover:text-slate-700"
+                    }`}
+                >
+                    Traveler Network
+                </button>
+            </div>
 
             {activeTab === "swaps" ? (
                 renderSwapView()
             ) : (
                 <div className="space-y-3">
                     {travelerAvailability?.active && (
-                        <div className="mx-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
+                        <div className="mx-1 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
                             <p className="font-semibold">You are visible as a traveler.</p>
                             <p className="mt-0.5">
                                 Buyers can send you pasabuy requests

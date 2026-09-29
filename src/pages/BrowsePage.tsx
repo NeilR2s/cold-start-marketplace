@@ -484,66 +484,58 @@ export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen, setSe
             />
 
             {/* --- HEADER SEARCH SECTION --- */}
-            <div className="pt-6 pb-2 sticky top-0 z-40 bg-slate-50/95 backdrop-blur-sm">
-                <SearchField
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    onClear={() => setSearchQuery('')}
-                    placeholder="Search items, travelers..."
-                    className="border-slate-100 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
-                />
+            <div className="pt-4 md:pt-6 pb-2">
+                <div className="max-w-xl mx-auto">
+                    <SearchField
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        onClear={() => setSearchQuery('')}
+                        placeholder="Search items, travelers, barter tags..."
+                        className="border-slate-200 py-2.5 shadow-xs bg-white"
+                    />
+                </div>
             </div>
 
             <div className="space-y-6">
                 {/* --- HERO SECTION --- */}
-                <div className="relative overflow-hidden rounded-2xl shadow-xl shadow-emerald-900/10 mt-4 h-[280px] flex flex-col justify-end group">
+                <div className="relative overflow-hidden rounded-3xl shadow-lg shadow-emerald-950/10 mt-2 min-h-[260px] sm:min-h-[290px] md:min-h-[320px] flex flex-col justify-end group">
                     <img
                         src={PinoyNeighborsLogo}
                         alt="Two neighbors exchanging items"
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     />
 
                     {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-900/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-900/65 to-emerald-950/20" />
 
                     {/* Atmospheric Glow */}
                     <div className="absolute top-0 right-0 p-24 bg-amber-400/20 blur-[60px] rounded-full pointer-events-none transform translate-x-10 -translate-y-10 mix-blend-screen" />
 
                     {/* Content */}
-                    <div className="relative z-10 p-6 text-white">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/30 text-[10px] font-bold uppercase tracking-wide backdrop-blur-md border border-emerald-200/20 text-emerald-100">
+                    <div className="relative z-10 p-5 sm:p-7 md:p-8 text-white flex flex-col justify-end">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/30 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border border-emerald-200/30 text-emerald-100 shadow-xs">
                                 <HeartHandshake size={12} /> Cashless Community
                             </div>
                         </div>
 
-                        <h1 className="text-3xl font-bold mb-2 leading-tight">
-                            Swap items, <br /> skip the cash
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 leading-tight tracking-tight">
+                            Swap items, <br className="sm:hidden" /> skip the cash.
                         </h1>
 
-                        <p className="text-emerald-100/90 text-sm mb-5 font-medium max-w-[280px] leading-relaxed">
-                            Trade albums, gadgets, food, and more with your community.
+                        <p className="text-emerald-100/90 text-xs sm:text-sm mb-4 sm:mb-5 font-medium max-w-md leading-relaxed">
+                            Trade albums, gadgets, specialty food, and pasabuy goods with trusted neighbors.
                         </p>
 
-                        <div className="flex flex-wrap gap-2.5 items-center">
-                            <Button
-                                variant="secondary"
-                                pill
-                                size="sm"
-                                onClick={() => navigate('/explore')}
-                                className="bg-white text-emerald-900 hover:bg-emerald-50 font-bold uppercase tracking-wide text-xs h-9 px-4"
-                            >
-                                <ArrowLeftRight size={14} className="text-emerald-700" />
-                                Browse Swaps
-                            </Button>
+                        <div className="flex items-center gap-3">
                             <Button
                                 variant="emerald"
                                 pill
                                 size="sm"
                                 onClick={() => setIsPostTripOpen?.(true)}
-                                className="font-bold uppercase tracking-wide text-xs h-9 px-4"
+                                className="font-bold uppercase tracking-wider text-xs h-10 px-5 shadow-md shadow-emerald-950/30"
                             >
-                                <Plus size={14} />
+                                <Plus size={15} className="mr-1" />
                                 Host a Pasabuy
                             </Button>
                         </div>
@@ -551,7 +543,7 @@ export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen, setSe
                 </div>
 
                 {/* --- FILTER BAR --- */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sticky top-[76px] z-30 py-2 -mx-4 px-4 bg-slate-50/95 backdrop-blur-sm">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar py-2">
                     <button
                         type="button"
                         onClick={() => setShowFilters(!showFilters)}
@@ -652,7 +644,7 @@ export const BrowsePage: React.FC<BrowsePageProps> = ({ setIsPostTripOpen, setSe
                                 className="group bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex flex-col"
                             >
                                 {/* Image Container */}
-                                <div className="aspect-[4/5] w-full bg-slate-200 relative overflow-hidden">
+                                <div className="aspect-square sm:aspect-[4/3] md:aspect-square w-full bg-slate-200 relative overflow-hidden">
                                     <img
                                         src={product.image}
                                         alt={product.title}

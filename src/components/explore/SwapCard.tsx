@@ -9,22 +9,26 @@ type SwapCardProps = {
   layout?: "grid" | "list";
   onChatHost?: (listing: SwapListing) => void;
   onJoinGroupSwap?: (listing: SwapListing) => void;
+  onViewListing?: (listing: SwapListing) => void;
 };
 
-export function SwapCard({ listing, layout = "grid", onChatHost, onJoinGroupSwap }: SwapCardProps) {
+export function SwapCard({ listing, layout = "grid", onChatHost, onJoinGroupSwap, onViewListing }: SwapCardProps) {
   const showContributorBar = listing.barterType === "Group Swap" || listing.barterType === "1-to-Many Swap";
 
   return (
     <article className="flex flex-col rounded-3xl border border-slate-200 bg-white shadow-sm transition-transform hover:-translate-y-0.5">
-      <div className="relative overflow-hidden rounded-3xl">
+      <div 
+        onClick={() => onViewListing?.(listing)}
+        className="relative overflow-hidden rounded-3xl cursor-pointer"
+      >
         <img
           src={listing.heroImage}
           alt={listing.title}
-          className={`h-48 w-full object-cover ${layout === "list" ? "md:h-60" : ""}`}
+          className={`h-48 w-full object-cover transition-transform duration-300 hover:scale-105 ${layout === "list" ? "md:h-60" : ""}`}
         />
-        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+        <div className="absolute left-3 sm:left-4 top-3 sm:top-4 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-80px)] z-10">
           <SwapTypeBadge type={listing.barterType} />
-          <Badge variant="outline" pill className="bg-white/90 backdrop-blur-xs border-white/40 text-slate-700">
+          <Badge variant="outline" pill className="bg-white/90 backdrop-blur-xs border-white/40 text-slate-700 max-w-[140px] truncate text-[11px]">
             {listing.category}
           </Badge>
         </div>
@@ -57,7 +61,12 @@ export function SwapCard({ listing, layout = "grid", onChatHost, onJoinGroupSwap
         </div>
 
         <div>
-          <h3 className="text-lg font-bold text-slate-900">{listing.title}</h3>
+          <h3 
+            onClick={() => onViewListing?.(listing)}
+            className="text-lg font-bold text-slate-900 cursor-pointer hover:text-emerald-700 transition-colors"
+          >
+            {listing.title}
+          </h3>
           <p className="text-sm text-slate-500">{listing.subtitle}</p>
         </div>
 
@@ -117,7 +126,8 @@ export function SwapCard({ listing, layout = "grid", onChatHost, onJoinGroupSwap
               variant="outline"
               pill
               size="sm"
-              className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors"
+              className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors cursor-pointer"
+              onClick={() => onViewListing?.(listing)}
             >
               View Listing
             </Button>
@@ -126,7 +136,7 @@ export function SwapCard({ listing, layout = "grid", onChatHost, onJoinGroupSwap
             variant="emerald"
             pill
             size="sm"
-            className="w-full text-xs font-semibold"
+            className="w-full text-xs font-semibold cursor-pointer"
             onClick={() => onChatHost?.(listing)}
           >
             Chat Host <ArrowRight className="h-4 w-4" />

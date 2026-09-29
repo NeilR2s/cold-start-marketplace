@@ -87,70 +87,65 @@ export function TravelerPage() {
   };
 
   return (
-    <div className="space-y-5 pb-24 pt-6">
+    <div className="space-y-4 pt-1">
       {chatToast && (
-        <div className="mx-4 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+        <div className="mx-1 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-lg">
           {chatToast}
         </div>
       )}
 
-      <header className="space-y-3 px-4">
-        <p className="text-xs font-semibold uppercase text-emerald-600">Traveler Discovery</p>
-        <h1 className="text-2xl font-black text-slate-900">Match with active bitbit partners.</h1>
-        <p className="text-sm text-slate-500">Filter by origin, route, kapalit, and restrictions to find a perfect barter match.</p>
+      {/* Search & Filter Toolbar */}
+      <section className="space-y-3 px-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="relative flex-1">
+            <Sparkles className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+            <input
+              value={filters.query}
+              onChange={(event) => updateFilters({ ...filters, query: event.target.value })}
+              placeholder="Search traveler, bitbit, kapalit..."
+              className="w-full h-10 sm:h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-xs transition-all"
+            />
+          </div>
 
-        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
-          <Sparkles className="h-5 w-5 text-slate-400" />
-          <input
-            value={filters.query}
-            onChange={(event) => updateFilters({ ...filters, query: event.target.value })}
-            placeholder="Search traveler, bitbit, kapalit..."
-            className="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-          />
-        </label>
-      </header>
+          <div className="flex items-center gap-2">
+            <SortDropdown
+              value={filters.sort}
+              options={TRAVELER_SORT_OPTIONS}
+              onChange={handleSortChange}
+              onOpenFilters={() => setDrawerOpen(true)}
+              activeFilterCount={pills.length}
+            />
 
-      <section className="space-y-4 px-4">
-        <div className="flex flex-col gap-3">
-          <SortDropdown
-            value={filters.sort}
-            options={TRAVELER_SORT_OPTIONS}
-            onChange={handleSortChange}
-            onOpenFilters={() => setDrawerOpen(true)}
-            label="Sort travelers"
-          />
-
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-            <Button
-              type="button"
-              variant={layout === "list" ? "default" : "ghost"}
-              size="sm"
-              pill
-              className={`h-8 px-3 ${layout === "list" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
-              onClick={() => setLayout("list")}
-              aria-label="List view"
-            >
-              <Rows3 className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant={layout === "grid" ? "default" : "ghost"}
-              size="sm"
-              pill
-              className={`h-8 px-3 ${layout === "grid" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
-              onClick={() => setLayout("grid")}
-              aria-label="Grid view"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
+            {/* View Switcher */}
+            <div className="h-10 sm:h-11 flex items-center gap-0.5 bg-slate-100 p-1 rounded-xl border border-slate-200/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setLayout("grid")}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  layout === "grid" ? "bg-white text-emerald-700 shadow-xs font-bold" : "text-slate-400 hover:text-slate-700"
+                }`}
+                aria-label="Grid view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setLayout("list")}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  layout === "list" ? "bg-white text-emerald-700 shadow-xs font-bold" : "text-slate-400 hover:text-slate-700"
+                }`}
+                aria-label="List view"
+              >
+                <Rows3 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
         <TravelerFilterPills pills={pills} onRemove={handlePillRemove} onClearAll={handleClearAll} />
-
       </section>
 
-      <section className="px-4">
+      <section className="px-1">
         <TravelerGrid
           travelers={visibleTravelers}
           layout={layout}

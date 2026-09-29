@@ -87,11 +87,16 @@ export const GroupOrderModal: React.FC<GroupOrderModalProps> = ({ selectedGO, on
         </div>
 
         <div className="overflow-y-auto p-5 space-y-6 bg-slate-50/50">
-          {/* Header Info */}
           <div>
             <div className="flex justify-between items-start mb-2">
               <Badge variant="accent">{selectedGO.category}</Badge>
-              <span className="text-xs text-slate-500 font-medium">Ends {new Date(selectedGO.deadline).toLocaleDateString()}</span>
+              <span className="text-xs text-slate-500 font-medium">
+                {(() => {
+                  if (!selectedGO.deadline) return "Ends in 7 days";
+                  const parsed = new Date(selectedGO.deadline);
+                  return !isNaN(parsed.getTime()) ? `Ends ${parsed.toLocaleDateString()}` : "Ends in 7 days";
+                })()}
+              </span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{selectedGO.title}</h1>
             <div className="flex items-center gap-2 text-slate-600 text-sm">

@@ -10,10 +10,10 @@ const avatarVariants = cva(
     variants: {
       size: {
         xs: "h-7 w-7 text-[10px]",
-        sm: "h-6 w-6 text-[10px]",
-        md: "h-9 w-9 text-xs",
+        sm: "h-8 w-8 text-xs",
+        md: "h-10 w-10 text-sm",
         lg: "h-14 w-14 text-xl",
-        xl: "h-24 w-24 text-2xl md:h-28 md:w-28",
+        xl: "h-20 w-20 text-xl md:h-24 md:w-24 md:text-2xl",
       },
     },
     defaultVariants: {
@@ -21,6 +21,29 @@ const avatarVariants = cva(
     },
   }
 );
+
+const shieldConfig: Record<string, { container: string; icon: string }> = {
+  xs: {
+    container: "absolute -bottom-0.5 -right-0.5 z-10 rounded-full bg-white p-[1px] shadow-xs",
+    icon: "h-2 w-2 text-emerald-600 fill-emerald-100",
+  },
+  sm: {
+    container: "absolute -bottom-0.5 -right-0.5 z-10 rounded-full bg-white p-[1.5px] shadow-xs",
+    icon: "h-2.5 w-2.5 text-emerald-600 fill-emerald-100",
+  },
+  md: {
+    container: "absolute -bottom-0.5 -right-0.5 z-10 rounded-full bg-white p-0.5 shadow-xs",
+    icon: "h-3.5 w-3.5 text-emerald-600 fill-emerald-100",
+  },
+  lg: {
+    container: "absolute bottom-0 right-0 z-10 rounded-full bg-white p-1 shadow-xs",
+    icon: "h-4 w-4 text-emerald-600 fill-emerald-100",
+  },
+  xl: {
+    container: "absolute bottom-0.5 right-0.5 z-10 rounded-full bg-white p-1 md:p-1.5 shadow-md",
+    icon: "h-5 w-5 md:h-6 md:w-6 text-emerald-600 fill-emerald-100",
+  },
+};
 
 const AvatarRoot = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -78,6 +101,8 @@ export function Avatar({
   ...props
 }: AvatarProps) {
   const initials = (name || "?").trim().substring(0, 2).toUpperCase();
+  const currentSize = (typeof size === "string" && shieldConfig[size] ? size : "md");
+  const currentShield = shieldConfig[currentSize];
 
   return (
     <div className="relative inline-block shrink-0">
@@ -86,8 +111,8 @@ export function Avatar({
         <AvatarFallback>{initials}</AvatarFallback>
       </AvatarRoot>
       {verified && (
-        <div className="absolute -bottom-1 -right-1 z-10 rounded-full bg-white p-0.5 shadow-sm">
-          <ShieldCheck className="h-3.5 w-3.5 text-blue-500 fill-blue-500/15" />
+        <div className={currentShield.container}>
+          <ShieldCheck className={currentShield.icon} />
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Bell } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
 import { Avatar } from "./avatar";
+import { Button } from "./button";
 import { cn } from "@/lib/utils";
 
 export interface BitbitLogoProps extends React.SVGProps<SVGSVGElement> {}
@@ -24,26 +25,101 @@ export interface HeaderProps {
   userName?: string;
   isVerified?: boolean;
   className?: string;
+  currentPath?: string;
+  onNavigate?: (path: string) => void;
+  onOpenPostTrip?: () => void;
+  unreadCount?: number;
+  navItems?: { label: string; value: string; icon: React.ElementType }[];
 }
 
-export const Header: React.FC<HeaderProps> = ({ userName, isVerified, className }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  userName, 
+  isVerified, 
+  className,
+  currentPath = "/home",
+  onNavigate,
+  onOpenPostTrip,
+  unreadCount = 0,
+  navItems = []
+}) => {
   return (
-    <header className={cn("sticky top-0 z-40 w-full backdrop-blur-md border-b border-slate-200 bg-white/80", className)}>
-      <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <BitbitLogo className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm p-1" />
-          <span className="font-bold text-lg tracking-wide text-slate-900">Bitbit</span>
+    <header className={cn("sticky top-0 z-40 w-full backdrop-blur-md border-b border-slate-200/90 bg-white/90 shadow-xs", className)}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between">
+        {/* Brand / Logo */}
+        <div 
+          onClick={() => onNavigate?.("/home")}
+          className="flex items-center gap-2.5 cursor-pointer select-none group"
+        >
+          <BitbitLogo className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-xs p-1.5 transition-transform duration-200 group-hover:scale-105" />
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900">Bitbit</span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Desktop Primary Navigation */}
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2" aria-label="Desktop Navigation">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPath === item.value;
+            const isMessages = item.value === "/messages";
+
+            return (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => onNavigate?.(item.value)}
+                className={cn(
+                  "relative flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer",
+                  isActive
+                    ? "bg-emerald-50 text-emerald-700 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
+                )}
+              >
+                <Icon className={cn("w-4 h-4", isActive ? "text-emerald-600 stroke-[2.5]" : "text-slate-400")} />
+                <span>{item.label}</span>
+                {isMessages && unreadCount > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-white shadow-xs">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {onOpenPostTrip && (
+            <Button
+              type="button"
+              variant="emerald"
+              size="sm"
+              pill
+              onClick={onOpenPostTrip}
+              className="hidden md:inline-flex font-bold text-xs shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              Host Pasabuy
+            </Button>
+          )}
+
           <button
             type="button"
             aria-label="Notifications"
-            className="relative text-slate-500 hover:text-slate-800 transition-colors p-1"
+            className="relative text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors p-2 cursor-pointer"
           >
-            <Bell size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            <Bell size={19} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white" />
           </button>
-          <Avatar name={userName} verified={isVerified} />
+
+          <button
+            type="button"
+            onClick={() => onNavigate?.("/profile")}
+            className="rounded-full ring-2 ring-transparent hover:ring-slate-300 transition-all cursor-pointer p-0.5"
+            aria-label="User profile"
+          >
+            <Avatar name={userName} verified={isVerified} size="sm" />
+          </button>
         </div>
       </div>
     </header>
