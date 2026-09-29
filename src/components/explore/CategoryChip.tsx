@@ -11,6 +11,7 @@ import {
   Plane,
 } from "lucide-react";
 import { CategoryName } from "../../types/explore";
+import { Button } from "@/components/ui";
 
 const categoryIcons: Record<CategoryName, ComponentType<{ className?: string }>> = {
   "Food & Pasalubong": Utensils,
@@ -28,23 +29,29 @@ type CategoryChipProps = {
   label: CategoryName;
   selected?: boolean;
   onToggle: (label: CategoryName) => void;
+  className?: string;
 };
 
-const baseClasses =
-  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors active:scale-[0.98]";
-
-export function CategoryChip({ label, selected = false, onToggle }: CategoryChipProps) {
+export function CategoryChip({ label, selected = false, onToggle, className }: CategoryChipProps) {
   const Icon = categoryIcons[label];
 
   return (
-    <button
+    <Button
       type="button"
+      variant={selected ? "emerald" : "outline"}
+      pill
+      size="sm"
       onClick={() => onToggle(label)}
-      className={`${baseClasses} ${selected ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white text-slate-600"}`}
+      className={
+        selected
+          ? `h-auto py-1.5 px-3 text-xs font-medium border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100/80 ${className || ""}`
+          : `h-auto py-1.5 px-3 text-xs font-medium border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 ${className || ""}`
+      }
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-3.5 w-3.5 mr-1.5 shrink-0" />
       <span>{label}</span>
-    </button>
+    </Button>
   );
 }
+
 

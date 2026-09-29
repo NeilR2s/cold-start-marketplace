@@ -1,16 +1,17 @@
-import { MessageCircle, Users, Sparkles, ArrowRight } from "lucide-react";
+import { MessageCircle, Users, Sparkles, ArrowRight, Heart } from "lucide-react";
 import { SwapListing } from "../../types/explore";
 import { SwapTypeBadge } from "./SwapTypeBadge";
 import { LocationBadge } from "./LocationBadge";
-import { Button } from "@/components/ui";
+import { Button, Badge } from "@/components/ui";
 
 type SwapCardProps = {
   listing: SwapListing;
   layout?: "grid" | "list";
   onChatHost?: (listing: SwapListing) => void;
+  onJoinGroupSwap?: (listing: SwapListing) => void;
 };
 
-export function SwapCard({ listing, layout = "grid", onChatHost }: SwapCardProps) {
+export function SwapCard({ listing, layout = "grid", onChatHost, onJoinGroupSwap }: SwapCardProps) {
   const showContributorBar = listing.barterType === "Group Swap" || listing.barterType === "1-to-Many Swap";
 
   return (
@@ -23,15 +24,22 @@ export function SwapCard({ listing, layout = "grid", onChatHost }: SwapCardProps
         />
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           <SwapTypeBadge type={listing.barterType} />
-          <span className="rounded-full bg-white/80 px-2 py-1 text-xs font-semibold text-slate-600">{listing.category}</span>
+          <Badge variant="outline" pill className="bg-white/90 backdrop-blur-xs border-white/40 text-slate-700">
+            {listing.category}
+          </Badge>
         </div>
-        <button
+        <Button
           type="button"
-          className="absolute right-4 top-4 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-rose-500"
+          variant="ghost"
+          pill
+          size="sm"
+          className="absolute right-4 top-4 h-7 bg-white/90 backdrop-blur-xs px-2.5 text-xs font-semibold text-rose-500 hover:bg-white hover:text-rose-600 shadow-xs cursor-pointer"
         >
-          {listing.likes} ♥
-        </button>
+          <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500 mr-1 inline" />
+          {listing.likes}
+        </Button>
       </div>
+
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-center gap-2">
@@ -94,14 +102,26 @@ export function SwapCard({ listing, layout = "grid", onChatHost }: SwapCardProps
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          <Button
-            variant="outline"
-            pill
-            size="sm"
-            className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors"
-          >
-            View Listing
-          </Button>
+          {listing.barterType === "Group Swap" && onJoinGroupSwap ? (
+            <Button
+              variant="default"
+              pill
+              size="sm"
+              className="w-full text-xs font-semibold"
+              onClick={() => onJoinGroupSwap(listing)}
+            >
+              <Users className="h-3.5 w-3.5 mr-1" /> Join Group Pool
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              pill
+              size="sm"
+              className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors"
+            >
+              View Listing
+            </Button>
+          )}
           <Button
             variant="emerald"
             pill
@@ -112,6 +132,7 @@ export function SwapCard({ listing, layout = "grid", onChatHost }: SwapCardProps
             Chat Host <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
+
       </div>
     </article>
   );

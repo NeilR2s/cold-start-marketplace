@@ -10,6 +10,8 @@ import { buildFilterPills, defaultFilters, filterListings, sortListings } from "
 import { FilterState, SwapSortOption } from "../types/explore";
 import { SWAP_SORT_OPTIONS } from "../constants/exploreFilters";
 import { TravelerPage } from "../components/travelers/TravelerPage";
+import { Button } from "@/components/ui";
+import { GroupOrder, MOCK_GOS } from "@/data";
 
 const INITIAL_VISIBLE = 4;
 
@@ -20,7 +22,9 @@ type TravelerAvailability = {
 
 type ExplorePageProps = {
     travelerAvailability?: TravelerAvailability;
+    onJoinGroupOrder?: (go: GroupOrder) => void;
 };
+
 
 type ExploreLocationState = {
     activeTab?: "swaps" | "travelers";
@@ -30,7 +34,7 @@ const isExploreLocationState = (state: unknown): state is ExploreLocationState =
     return typeof state === "object" && state !== null && "activeTab" in state;
 };
 
-const ExplorePage = ({ travelerAvailability }: ExplorePageProps) => {
+const ExplorePage = ({ travelerAvailability, onJoinGroupOrder }: ExplorePageProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [filters, setFilters] = useState<FilterState>(defaultFilters);
@@ -103,6 +107,24 @@ const ExplorePage = ({ travelerAvailability }: ExplorePageProps) => {
         });
     };
 
+    const handleJoinGroupSwap = (listing: typeof SWAP_LISTINGS[number]) => {
+        const matched = MOCK_GOS.find(
+            (go) => go.title.toLowerCase().includes(listing.title.toLowerCase()) || go.category === listing.category
+        ) || {
+            id: `go_${listing.id}`,
+            title: listing.title,
+            manager: { name: listing.hostName, verified: true },
+            region: listing.locationLabel,
+            status: 'open',
+            deadline: listing.postedAt,
+            category: listing.category,
+            items: [{ name: listing.title, price: 1000 }],
+            pooling: { current: listing.contributorSlots?.filled || 5, target: listing.contributorSlots?.total || 10, baseFee: 150, minFee: 50 },
+            biases: ["Standard Edition", "Special Set"],
+        };
+        onJoinGroupOrder?.(matched);
+    };
+
     const renderSwapView = () => (
         <div className="space-y-5 pt-2">
             <header className="space-y-3 px-4">
@@ -131,23 +153,29 @@ const ExplorePage = ({ travelerAvailability }: ExplorePageProps) => {
                         onChange={handleSortChange}
                         onOpenFilters={() => setDrawerOpen(true)}
                     />
-                    <div className="flex items-center gap-2">
-                        <button
+                    <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                        <Button
                             type="button"
-                            className={`rounded-full border px-3 py-2 ${layout === "grid" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400"}`}
+                            variant={layout === "grid" ? "default" : "ghost"}
+                            size="sm"
+                            pill
+                            className={`h-8 px-3 ${layout === "grid" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
                             onClick={() => setLayout("grid")}
                             aria-label="Grid view"
                         >
                             <LayoutGrid className="h-4 w-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
-                            className={`rounded-full border px-3 py-2 ${layout === "list" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400"}`}
+                            variant={layout === "list" ? "default" : "ghost"}
+                            size="sm"
+                            pill
+                            className={`h-8 px-3 ${layout === "list" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
                             onClick={() => setLayout("list")}
                             aria-label="List view"
                         >
                             <Rows3 className="h-4 w-4" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -161,6 +189,7 @@ const ExplorePage = ({ travelerAvailability }: ExplorePageProps) => {
                     onLoadMore={() => setVisibleCount((prev) => prev + 4)}
                     hasMore={hasMore}
                     onChatHost={handleChatHost}
+                    onJoinGroupSwap={handleJoinGroupSwap}
                 />
             </section>
 
@@ -182,23 +211,28 @@ const ExplorePage = ({ travelerAvailability }: ExplorePageProps) => {
                     <h1 className="text-2xl font-black text-slate-900">Choose your swap adventure.</h1>
                     <p className="text-sm text-slate-500">Toggle between curated swap listings and the traveler network.</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 rounded-full bg-slate-100 p-1 text-sm font-semibold">
-                    <button
+                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 text-sm font-semibold">
+                    <Button
                         type="button"
-                        className={`rounded-full px-4 py-2 ${activeTab === "swaps" ? "bg-white text-slate-900 shadow" : "text-slate-500"}`}
+                        variant={activeTab === "swaps" ? "default" : "ghost"}
+                        pill
                         onClick={() => setActiveTab("swaps")}
+                        className={activeTab === "swaps" ? "bg-white text-slate-900 shadow-sm hover:bg-white" : "text-slate-500 hover:text-slate-900"}
                     >
                         Swap marketplace
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="button"
-                        className={`rounded-full px-4 py-2 ${activeTab === "travelers" ? "bg-white text-slate-900 shadow" : "text-slate-500"}`}
+                        variant={activeTab === "travelers" ? "default" : "ghost"}
+                        pill
                         onClick={() => setActiveTab("travelers")}
+                        className={activeTab === "travelers" ? "bg-white text-slate-900 shadow-sm hover:bg-white" : "text-slate-500 hover:text-slate-900"}
                     >
                         Traveler network
-                    </button>
+                    </Button>
                 </div>
             </section>
+
 
             {activeTab === "swaps" ? (
                 renderSwapView()

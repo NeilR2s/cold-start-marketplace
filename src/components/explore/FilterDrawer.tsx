@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { FilterState, TagCategory, TagValue } from "../../types/explore";
 import { BARTER_TYPES, CATEGORIES, EXCHANGE_METHODS, LOCATION_FILTERS, TAG_GROUPS } from "../../constants/exploreFilters";
@@ -18,6 +18,9 @@ type FilterDrawerProps = {
 const toggleValue = <T,>(values: T[], value: T) => (values.includes(value) ? values.filter((v) => v !== value) : [...values, value]);
 
 export function FilterDrawer({ open, filters, onChange, onClose, onReset }: FilterDrawerProps) {
+  const drawerRef = useRef<HTMLElement>(null);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+
   const setFilters = (payload: Partial<FilterState>) => onChange({ ...filters, ...payload });
 
   const toggleTag = (group: TagCategory, value: TagValue) => {
@@ -28,13 +31,56 @@ export function FilterDrawer({ open, filters, onChange, onClose, onReset }: Filt
 
   useEffect(() => {
     if (!open) return;
+    previouslyFocusedElement.current = document.activeElement as HTMLElement | null;
+
+    const drawer = drawerRef.current;
+    if (drawer) {
+      const focusable = drawer.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      } else {
+        drawer.focus();
+      }
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
         onClose();
+        return;
+      }
+
+      if (e.key === "Tab" && drawer) {
+        const focusable = Array.from(
+          drawer.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusable.length === 0) return;
+
+        const firstElement = focusable[0];
+        const lastElement = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocusedElement.current) {
+        previouslyFocusedElement.current.focus();
+      }
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -52,37 +98,49 @@ export function FilterDrawer({ open, filters, onChange, onClose, onReset }: Filt
         aria-hidden="true"
       />
       <aside
-        className="relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-white p-5 shadow-2xl z-10 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-150"
+        ref={drawerRef}
+        tabIndex={-1}
+        className="relative w-full sm:max-w-lg md:max-w-xl max-h-[85vh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-white p-5 shadow-2xl z-10 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-150 outline-none"
       >
         <header className="mb-4 flex items-center justify-between pb-2 border-b border-slate-100">
           <div>
             <p className="text-xs font-semibold uppercase text-emerald-600">Filters</p>
             <h3 id="explore-filters-title" className="text-lg font-bold text-slate-900">Sharpen your search</h3>
           </div>
-          <button 
+          <Button 
             type="button" 
+            variant="ghost"
+            size="icon"
             onClick={onClose} 
-            className="rounded-full border border-slate-200 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            className="rounded-full border border-slate-200 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer h-9 w-9"
             aria-label="Close filters"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </header>
 
         <div className="space-y-4 overflow-y-auto pr-1 pb-4">
           <FilterGroup title="Barter Type" subtitle="Choose multiple">
-            {BARTER_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setFilters({ barterTypes: toggleValue(filters.barterTypes, type) })}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
-                  filters.barterTypes.includes(type) ? "bg-emerald-600 text-white border border-emerald-600" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+            {BARTER_TYPES.map((type) => {
+              const selected = filters.barterTypes.includes(type);
+              return (
+                <Button
+                  key={type}
+                  type="button"
+                  variant={selected ? "emerald" : "outline"}
+                  pill
+                  size="sm"
+                  onClick={() => setFilters({ barterTypes: toggleValue(filters.barterTypes, type) })}
+                  className={
+                    selected
+                      ? "h-auto py-1.5 px-4 text-xs font-semibold shadow-xs"
+                      : "h-auto py-1.5 px-4 text-xs font-semibold border-slate-200 text-slate-600 hover:border-slate-300"
+                  }
+                >
+                  {type}
+                </Button>
+              );
+            })}
           </FilterGroup>
 
           <FilterGroup title="Categories" subtitle="Filter by type of item or service">
@@ -97,33 +155,49 @@ export function FilterDrawer({ open, filters, onChange, onClose, onReset }: Filt
           </FilterGroup>
 
           <FilterGroup title="Exchange Methods" subtitle="How trades can happen">
-            {EXCHANGE_METHODS.map((method) => (
-              <button
-                key={method}
-                type="button"
-                onClick={() => setFilters({ exchangeMethods: toggleValue(filters.exchangeMethods, method) })}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
-                  filters.exchangeMethods.includes(method) ? "bg-slate-900 text-white border border-slate-900" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                {method}
-              </button>
-            ))}
+            {EXCHANGE_METHODS.map((method) => {
+              const selected = filters.exchangeMethods.includes(method);
+              return (
+                <Button
+                  key={method}
+                  type="button"
+                  variant={selected ? "default" : "outline"}
+                  pill
+                  size="sm"
+                  onClick={() => setFilters({ exchangeMethods: toggleValue(filters.exchangeMethods, method) })}
+                  className={
+                    selected
+                      ? "h-auto py-1.5 px-4 text-xs font-semibold bg-slate-900 text-white shadow-xs"
+                      : "h-auto py-1.5 px-4 text-xs font-semibold border-slate-200 text-slate-600 hover:border-slate-300"
+                  }
+                >
+                  {method}
+                </Button>
+              );
+            })}
           </FilterGroup>
 
           <FilterGroup title="Location Filter" subtitle="Choose one location focus">
-            {LOCATION_FILTERS.map((loc) => (
-              <button
-                key={loc}
-                type="button"
-                onClick={() => setFilters({ location: filters.location === loc ? undefined : loc })}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${
-                  filters.location === loc ? "bg-emerald-600 text-white border border-emerald-600" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                {loc}
-              </button>
-            ))}
+            {LOCATION_FILTERS.map((loc) => {
+              const selected = filters.location === loc;
+              return (
+                <Button
+                  key={loc}
+                  type="button"
+                  variant={selected ? "emerald" : "outline"}
+                  pill
+                  size="sm"
+                  onClick={() => setFilters({ location: filters.location === loc ? undefined : loc })}
+                  className={
+                    selected
+                      ? "h-auto py-1.5 px-4 text-xs font-semibold shadow-xs"
+                      : "h-auto py-1.5 px-4 text-xs font-semibold border-slate-200 text-slate-600 hover:border-slate-300"
+                  }
+                >
+                  {loc}
+                </Button>
+              );
+            })}
           </FilterGroup>
 
           {TAG_GROUPS.map((group) => (

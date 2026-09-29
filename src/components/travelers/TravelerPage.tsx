@@ -9,6 +9,8 @@ import { TRAVELER_SORT_OPTIONS } from "../../constants/travelerFilters";
 import { TRAVELERS } from "../../data/travelers";
 import { TravelerFilterState, TravelerProfile, TravelerSortOption } from "../../types/travelers";
 import { buildTravelerFilterPills, defaultTravelerFilters, filterTravelers, sortTravelers } from "../../utils/travelerFilters";
+import { Button, Badge } from "@/components/ui";
+
 
 const INITIAL_VISIBLE = 4;
 
@@ -118,27 +120,34 @@ export function TravelerPage() {
             label="Sort travelers"
           />
 
-          <div className="flex items-center gap-2">
-            <button
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+            <Button
               type="button"
-              className={`rounded-full border px-3 py-2 ${layout === "list" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400"}`}
+              variant={layout === "list" ? "default" : "ghost"}
+              size="sm"
+              pill
+              className={`h-8 px-3 ${layout === "list" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
               onClick={() => setLayout("list")}
               aria-label="List view"
             >
               <Rows3 className="h-4 w-4" />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className={`rounded-full border px-3 py-2 ${layout === "grid" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400"}`}
+              variant={layout === "grid" ? "default" : "ghost"}
+              size="sm"
+              pill
+              className={`h-8 px-3 ${layout === "grid" ? "shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
               onClick={() => setLayout("grid")}
               aria-label="Grid view"
             >
               <LayoutGrid className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
         <TravelerFilterPills pills={pills} onRemove={handlePillRemove} onClearAll={handleClearAll} />
+
       </section>
 
       <section className="px-4">
@@ -183,9 +192,16 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
             <p className="text-xs font-semibold uppercase text-slate-400">Traveler Profile</p>
             <h3 className="text-lg font-bold text-slate-900">{traveler.name}</h3>
           </div>
-          <button onClick={onClose} className="rounded-full border border-slate-200 p-2">
+          <Button 
+            type="button"
+            variant="ghost" 
+            size="icon"
+            onClick={onClose} 
+            className="rounded-full border border-slate-200 p-2 h-9 w-9 text-slate-400 hover:text-slate-600"
+            aria-label="Close modal"
+          >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </header>
 
         <div className="space-y-4 overflow-y-auto px-5 py-6">
@@ -200,9 +216,9 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
             <p className="text-xs font-semibold uppercase text-slate-400">Bitbit focus</p>
             <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
               {traveler.bitbit.map((item) => (
-                <span key={item} className="rounded-full bg-white px-3 py-1">
+                <Badge key={item} variant="outline" pill className="bg-white text-slate-700 py-1 px-3">
                   {item}
-                </span>
+                </Badge>
               ))}
             </div>
             {traveler.bitbitNotes && <p className="mt-2 text-xs text-slate-500">{traveler.bitbitNotes}</p>}
@@ -212,9 +228,9 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
             <p className="font-semibold text-slate-700">Restrictions</p>
             <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
               {traveler.restrictions.flags.map((flag) => (
-                <span key={flag} className="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-600">
+                <Badge key={flag} variant="neutral" pill className="text-[10px]">
                   {flag}
-                </span>
+                </Badge>
               ))}
             </div>
             <p className="mt-3 text-slate-600">
@@ -228,9 +244,9 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
             <p className="font-semibold uppercase text-emerald-700">Kapalit sweet spot</p>
             <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold text-emerald-800">
               {traveler.kapalitPreferences.map((pref) => (
-                <span key={pref} className="rounded-full bg-white px-3 py-1">
+                <Badge key={pref} variant="neutral" pill className="text-xs font-semibold">
                   {pref}
-                </span>
+                </Badge>
               ))}
             </div>
             {traveler.kapalitNotes && <p className="mt-2 text-emerald-700/80">{traveler.kapalitNotes}</p>}
@@ -247,7 +263,7 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
                     onMessage(traveler);
                     onClose();
                   }}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:border-emerald-300"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:border-emerald-300 cursor-pointer"
                 >
                   <span className="inline-flex items-center gap-2 text-xs uppercase text-slate-400">
                     <ClipboardCheck className="h-3.5 w-3.5" /> Copy & chat
@@ -260,19 +276,21 @@ function TravelerProfileModal({ traveler, onClose, onMessage }: TravelerProfileM
         </div>
 
         <footer className="border-t border-slate-100 p-4">
-          <button
+          <Button
             type="button"
-            className="w-full rounded-full bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+            variant="emerald"
+            className="w-full h-11 text-sm font-bold shadow-md shadow-emerald-600/20"
             onClick={() => {
               onMessage(traveler);
               onClose();
             }}
           >
             Copy message & open chat
-          </button>
+          </Button>
         </footer>
       </div>
     </div>
   );
 }
+
 

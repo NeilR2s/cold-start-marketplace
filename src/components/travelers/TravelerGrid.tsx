@@ -1,5 +1,6 @@
 import { TravelerProfile } from "../../types/travelers";
 import { TravelerCard } from "./TravelerCard";
+import { Button } from "@/components/ui";
 
 type TravelerGridProps = {
   travelers: TravelerProfile[];
@@ -44,15 +45,18 @@ export function TravelerGrid({
       </div>
 
       {hasMore && (
-        <button
+        <Button
           type="button"
+          variant="outline"
+          pill
           onClick={onLoadMore}
-          className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
+          className="w-full py-3 h-auto text-sm font-semibold text-slate-700 border-slate-300 hover:border-slate-900 transition-colors"
         >
           Load more travelers
-        </button>
+        </Button>
       )}
     </div>
   );
 }
+
 

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import {
     MapPin, Plane, Plus, Package,
@@ -40,9 +41,20 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     onMessageHost,
     onJoinGroupOrder,
 }) => {
+    useEffect(() => {
+        if (!product) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [product, onClose]);
+
     if (!product) return null;
 
-    const isGroupOrder = product.swapType === 'Group Order';
+    const isGroupOrder = product.swapType === 'Group Order' || product.acceptsGroup;
     const isPasabuy = product.swapType === 'Pasabuy';
 
     return (
@@ -69,6 +81,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         <Badge type={product.swapType}>{product.swapType}</Badge>
                     </div>
                 </div>
+
 
                 <div className="overflow-y-auto p-5 space-y-6">
                     {/* Title & Price */}
@@ -218,6 +231,17 @@ interface TravelerDetailModalProps {
 }
 
 const TravelerDetailModal: React.FC<TravelerDetailModalProps> = ({ traveler, onClose, onMessage }) => {
+    useEffect(() => {
+        if (!traveler) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [traveler, onClose]);
+
     if (!traveler) return null;
 
     return (
@@ -230,6 +254,7 @@ const TravelerDetailModal: React.FC<TravelerDetailModalProps> = ({ traveler, onC
             <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
             <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 animate-in zoom-in-95 duration-150">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+
                     <div>
                         <h2 id="traveler-detail-title" className="font-bold text-lg text-slate-800">{traveler.name}</h2>
                         <p className="text-xs text-slate-500">{traveler.trip.timelineLabel}</p>

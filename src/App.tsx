@@ -111,8 +111,14 @@ export default function BitbitApp() {
             />
             <Route 
               path="/explore" 
-              element={<ExplorePage travelerAvailability={travelerAvailability} />} 
+              element={
+                <ExplorePage 
+                  travelerAvailability={travelerAvailability} 
+                  onJoinGroupOrder={(go) => setSelectedGO(go as GroupOrder)}
+                />
+              } 
             />
+
             <Route 
               path="/orders" 
               element={<OrdersPage user={user} />} 
