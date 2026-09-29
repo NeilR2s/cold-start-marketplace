@@ -1,37 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, TrendingDown, ShieldCheck, CheckCircle } from 'lucide-react';
-import { Card, Badge, Avatar } from './CustomComponents';
-import { formatPHP } from '@/utils';
-import { formatCurrency } from '../utils';
-import { PRICE_BREAKDOWN } from '../data';
+import { Card, Badge, Avatar, Button } from '@/components/ui';
+import { formatPHP, formatCurrency } from '@/utils';
+import { PRICE_BREAKDOWN } from '@/data';
+import { GroupOrder } from '@/types/groupOrder';
+import { groupOrderService } from '@/services/groupOrderService';
 
+export interface GroupOrderModalProps {
+  selectedGO: GroupOrder | null;
+  onClose: () => void;
+  showToast: (message: string, type?: 'success' | 'error') => void;
+}
 
-const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
-  const [participants, setParticipants] = useState(selectedGO?.pooling?.current || 0);
-  const [selectedBias, setSelectedBias] = useState(null);
-  const [joined, setJoined] = useState(false);
+export const GroupOrderModal: React.FC<GroupOrderModalProps> = ({ selectedGO, onClose, showToast }) => {
+  const [participants, setParticipants] = useState<number>(selectedGO?.pooling?.current || 0);
+  const [selectedBias, setSelectedBias] = useState<string | null>(null);
+  const [joined, setJoined] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (selectedGO) {
+      setParticipants(selectedGO.pooling.current);
+      setSelectedBias(null);
+      setJoined(false);
+    }
+  }, [selectedGO]);
 
   if (!selectedGO) return null;
 
-  // Ambag Algorithm
-  const calculateFee = (count) => {
-    const { baseFee, minFee, target } = selectedGO.pooling;
-    if (count >= target) return minFee;
-    const discount = ((baseFee - minFee) / target) * count;
-    return Math.round(baseFee - discount);
-  };
+  const currentFee = groupOrderService.calculateFee(selectedGO, participants);
+  const potentialNextFee = groupOrderService.calculateFee(selectedGO, participants + 5);
 
-  const currentFee = calculateFee(participants);
-  const potentialNextFee = calculateFee(participants + 5);
-
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!selectedBias && selectedGO.biases.length > 0) {
       showToast("Please select a Bias first!", "error");
       return;
     }
-    setJoined(true);
-    setParticipants(p => p + 1);
-    showToast("Successfully joined Group Order!");
+
+    setIsSubmitting(true);
+    try {
+      const result = await groupOrderService.joinGroupOrder({
+        groupOrderId: selectedGO.id,
+        selectedBias: selectedBias || undefined,
+        quantity: 1,
+        paymentMethod: 'escrow',
+      });
+
+      setJoined(true);
+      setParticipants(result.newParticipantCount);
+      showToast("Successfully joined Group Order via Escrow!");
+    } catch {
+      showToast("Failed to join group order. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const totalPrice = formatCurrency(
@@ -39,22 +61,42 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="go-modal-title"
+    >
+      <div 
+        className="fixed inset-0" 
+        onClick={onClose} 
+        aria-hidden="true" 
+      />
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 animate-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-          <h2 className="font-bold text-lg text-slate-800">Group Order Details</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+          <h2 id="go-modal-title" className="font-bold text-lg text-slate-800">Group Order Details</h2>
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            aria-label="Close modal"
+          >
             <X size={20} />
           </button>
         </div>
 
         <div className="overflow-y-auto p-5 space-y-6 bg-slate-50/50">
-          {/* Header Info */}
           <div>
             <div className="flex justify-between items-start mb-2">
-              <Badge type="accent">{selectedGO.category}</Badge>
-              <span className="text-xs text-slate-500 font-medium">Ends {new Date(selectedGO.deadline).toLocaleDateString()}</span>
+              <Badge variant="accent">{selectedGO.category}</Badge>
+              <span className="text-xs text-slate-500 font-medium">
+                {(() => {
+                  if (!selectedGO.deadline) return "Ends in 7 days";
+                  const parsed = new Date(selectedGO.deadline);
+                  return !isNaN(parsed.getTime()) ? `Ends ${parsed.toLocaleDateString()}` : "Ends in 7 days";
+                })()}
+              </span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{selectedGO.title}</h1>
             <div className="flex items-center gap-2 text-slate-600 text-sm">
@@ -82,7 +124,7 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
             <div className="relative h-3 bg-slate-200 rounded-full overflow-hidden mb-2">
               <div 
                 className="absolute left-0 top-0 h-full bg-emerald-500 transition-all duration-500 ease-out"
-                style={{ width: `${(participants / selectedGO.pooling.target) * 100}%` }}
+                style={{ width: `${Math.min(100, (participants / selectedGO.pooling.target) * 100)}%` }}
               />
             </div>
             <div className="flex justify-between text-xs text-slate-500 mb-4 font-medium">
@@ -104,10 +146,11 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
                 {selectedGO.biases.map(bias => (
                   <button
                     key={bias}
+                    type="button"
                     onClick={() => !joined && setSelectedBias(bias)}
                     disabled={joined}
                     className={`
-                      text-xs py-2.5 px-1 rounded-lg border transition-all font-medium
+                      text-xs py-2.5 px-2 rounded-lg border transition-all font-medium cursor-pointer text-center truncate
                       ${selectedBias === bias 
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-200' 
                         : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-600'}
@@ -123,7 +166,7 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
 
           {/* Escrow Note */}
           <div className="flex gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
-             <ShieldCheck className="text-blue-600 flex-shrink-0" size={20} />
+             <ShieldCheck className="text-blue-600 shrink-0" size={20} />
              <div>
                <h4 className="text-xs font-bold text-blue-800">Protected by Bitbit Escrow</h4>
                <p className="text-[10px] text-blue-600 leading-relaxed mt-0.5">
@@ -152,7 +195,7 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
                 <span>Handling Fee</span>
                 <span>{formatCurrency(PRICE_BREAKDOWN.handlingFee)}</span>
               </li>
-              <li className="flex justify-between font-bold text-slate-800">
+              <li className="flex justify-between font-bold text-slate-800 pt-1 border-t border-slate-100">
                 <span>Total</span>
                 <span>{totalPrice}</span>
               </li>
@@ -164,20 +207,22 @@ const GroupOrderModal = ({ selectedGO, onClose, showToast }) => {
         <div className="p-4 border-t border-slate-100 bg-white">
           <div className="flex justify-between items-center mb-3 text-sm">
               <span className="text-slate-500">Total Estimate</span>
-              <span className="font-bold text-slate-900">{formatPHP(selectedGO.items[0].price + currentFee)}</span>
+              <span className="font-bold text-slate-900">{formatPHP((selectedGO.items[0]?.price || 0) + currentFee)}</span>
           </div>
           {joined ? (
-            <button disabled className="w-full py-3 bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-xl font-bold flex justify-center items-center gap-2">
+            <div className="w-full py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl font-bold flex justify-center items-center gap-2">
               <CheckCircle size={18} />
               Joined Successfully
-            </button>
+            </div>
           ) : (
-            <button 
+            <Button 
+              variant="emerald"
               onClick={handleJoin}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]"
+              disabled={isSubmitting}
+              className="w-full h-12 text-sm font-bold"
             >
-              Join & Pay via Escrow
-            </button>
+              {isSubmitting ? "Processing..." : "Join & Pay via Escrow"}
+            </Button>
           )}
         </div>
       </div>

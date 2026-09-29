@@ -1,14 +1,100 @@
-export const CURRENT_USER = {
+export interface UserProfile {
+  uid: string;
+  displayName: string;
+  avatar: string;
+  roles?: string[];
+  verificationStatus?: string;
+  reputationScore?: number;
+  walletBalance?: number;
+  email?: string;
+  location?: string;
+  joinedDate?: string;
+  credits?: number;
+  skills?: string[];
+  activeSwaps?: number;
+  verificationProgress?: number;
+  verificationSteps?: string;
+}
+
+export interface TripCapacity {
+  total: number;
+  available: number;
+  pricePerKg: number;
+}
+
+export interface TripTraveler {
+  name: string;
+  verified: boolean;
+  rating: number;
+}
+
+export interface Trip {
+  id: string;
+  traveler: TripTraveler;
+  origin: string;
+  destination: string;
+  date: string;
+  capacity: TripCapacity;
+  shops: string[];
+  status: 'scheduled' | 'closing_soon' | string;
+}
+
+export interface GroupOrderItem {
+  name: string;
+  price: number;
+}
+
+export interface GroupOrderPooling {
+  current: number;
+  target: number;
+  baseFee: number;
+  minFee: number;
+}
+
+export interface GroupOrderManager {
+  name: string;
+  verified: boolean;
+}
+
+export interface GroupOrder {
+  id: string;
+  title: string;
+  manager: GroupOrderManager;
+  region: string;
+  status: string;
+  deadline: string;
+  category: string;
+  items: GroupOrderItem[];
+  pooling: GroupOrderPooling;
+  biases: string[];
+}
+
+export interface PriceBreakdownConfig {
+  basePrice: number;
+  tax: number;
+  hostFee: number;
+  handlingFee: number;
+}
+
+export const CURRENT_USER: UserProfile = {
   uid: "u123",
   displayName: "Clara the Collector",
   avatar: "https://i.pravatar.cc/150?u=clara",
   roles: ["buyer", "traveler"],
   verificationStatus: "verified",
   reputationScore: 4.8,
-  walletBalance: 2450.00
+  walletBalance: 2450.00,
+  email: "clara@example.com",
+  location: "Ortigas, RET44",
+  joinedDate: "Sept 2023",
+  credits: 14.5,
+  skills: ["Web Design", "Gardening", "Pet Sitting"],
+  activeSwaps: 2,
+  verificationProgress: 75,
+  verificationSteps: "3/4"
 };
 
-export const MOCK_TRIPS = [
+export const MOCK_TRIPS: Trip[] = [
   {
     id: "t1",
     traveler: { name: "Miguel Travels", verified: true, rating: 4.9 },
@@ -31,7 +117,7 @@ export const MOCK_TRIPS = [
   }
 ];
 
-export const MOCK_GOS = [
+export const MOCK_GOS: GroupOrder[] = [
   {
     id: "go1",
     title: "Seventeen 'FML' Album GO",
@@ -74,7 +160,7 @@ export const MOCK_GOS = [
   }
 ];
 
-export const PRICE_BREAKDOWN = {
+export const PRICE_BREAKDOWN: PriceBreakdownConfig = {
   basePrice: 150,
   tax: 15,
   hostFee: 20,

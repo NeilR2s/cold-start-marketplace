@@ -1,5 +1,6 @@
-import { ArrowRight, BadgeCheck, MessageCircle, Plane, MapPin, ShieldCheck, Scale, Package } from "lucide-react";
+import { ArrowRight, MessageCircle, Plane, MapPin, Scale, Package } from "lucide-react";
 import { TravelerProfile } from "../../types/travelers";
+import { Avatar, Button, Badge } from "@/components/ui";
 
 type TravelerCardProps = {
   traveler: TravelerProfile;
@@ -9,7 +10,6 @@ type TravelerCardProps = {
   onProposeSwap?: (traveler: TravelerProfile) => void;
 };
 
-const badgeClasses = "rounded-full bg-slate-900/80 px-2 py-0.5 text-[10px] font-semibold text-white";
 
 export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, onProposeSwap }: TravelerCardProps) {
   const capacityPct = Math.round((traveler.availabilityKg / traveler.totalCapacityKg) * 100);
@@ -23,12 +23,9 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <img src={traveler.avatar} alt={traveler.name} className="h-12 w-12 rounded-full border border-slate-100 object-cover" />
+            <Avatar src={traveler.avatar} name={traveler.name} verified={traveler.verified} size="md" />
             <div>
-              <div className="flex items-center gap-1">
-                <p className="text-sm font-semibold text-slate-900">{traveler.name}</p>
-                {traveler.verified && <BadgeCheck className="h-4 w-4 text-emerald-500" />}
-              </div>
+              <p className="text-sm font-semibold text-slate-900">{traveler.name}</p>
               <p className="text-xs text-slate-500">{traveler.trip.timelineLabel}</p>
             </div>
           </div>
@@ -45,9 +42,9 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {traveler.bitbit.slice(0, 3).map((tag) => (
-            <span key={tag} className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+            <Badge key={tag} variant="success" pill className="text-[10px]">
               {tag}
-            </span>
+            </Badge>
           ))}
         </div>
       </article>
@@ -61,16 +58,14 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex flex-1 items-center gap-3">
-          <img
+          <Avatar
             src={traveler.avatar}
-            alt={traveler.name}
-            className="h-14 w-14 rounded-full border-2 border-emerald-100 object-cover"
+            name={traveler.name}
+            verified={traveler.verified}
+            size="lg"
           />
           <div className="flex-1">
-            <div className="flex items-center gap-1">
-              <h3 className="text-lg font-bold text-slate-900">{traveler.name}</h3>
-              {traveler.verified && <ShieldCheck className="h-4 w-4 text-emerald-500" />}
-            </div>
+            <h3 className="text-lg font-bold text-slate-900">{traveler.name}</h3>
             <p className="text-sm text-slate-500">{traveler.currentArea}</p>
             <p className="text-xs text-slate-400">
               Rating {traveler.rating.toFixed(1)} · {traveler.completedSwaps} swaps done
@@ -91,20 +86,24 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
 
       <section className="mt-4 grid gap-3 text-sm text-slate-700">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={badgeClasses}>
-            <MapPin className="mr-1 inline h-3.5 w-3.5 text-white/80" />
+          <Badge variant="default" pill className="text-[10px] bg-slate-900/80">
+            <MapPin className="mr-1 inline h-3 w-3 text-white/80" />
             {traveler.cityProvince}
-          </span>
-          <span className={badgeClasses}>{traveler.origin}</span>
-          <span className={badgeClasses}>{traveler.travelType}</span>
+          </Badge>
+          <Badge variant="default" pill className="text-[10px] bg-slate-900/80">
+            {traveler.origin}
+          </Badge>
+          <Badge variant="default" pill className="text-[10px] bg-slate-900/80">
+            {traveler.travelType}
+          </Badge>
         </div>
 
         <div className="rounded-2xl bg-slate-50/80 p-4">
           <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
             {traveler.bitbit.map((tag) => (
-              <span key={tag} className="rounded-full bg-white px-3 py-1">
+              <Badge key={tag} variant="outline" pill className="bg-white text-slate-700 py-1 px-3">
                 {tag}
-              </span>
+              </Badge>
             ))}
           </div>
           {traveler.bitbitNotes && <p className="mt-3 text-xs text-slate-500">{traveler.bitbitNotes}</p>}
@@ -129,9 +128,9 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
           </div>
           <div className="flex flex-wrap gap-1 text-[11px] font-semibold text-slate-600">
             {traveler.restrictions.flags.map((flag) => (
-              <span key={flag} className="rounded-full bg-slate-100 px-2 py-0.5">
+              <Badge key={flag} variant="neutral" pill className="text-[10px]">
                 {flag}
-              </span>
+              </Badge>
             ))}
           </div>
           {traveler.restrictions.notes && <p className="text-[11px] text-slate-500">{traveler.restrictions.notes}</p>}
@@ -152,14 +151,15 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
           <p className="text-xs font-semibold uppercase text-slate-500">Kapalit they want</p>
           <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-slate-700">
             {traveler.kapalitPreferences.map((pref) => (
-              <span key={pref} className="rounded-full bg-slate-100 px-3 py-1">
+              <Badge key={pref} variant="neutral" pill className="text-xs font-semibold">
                 {pref}
-              </span>
+              </Badge>
             ))}
           </div>
           {traveler.kapalitNotes && <p className="mt-2 text-xs text-slate-500">{traveler.kapalitNotes}</p>}
         </div>
       </section>
+
 
       <footer className="mt-4 flex flex-col gap-2 text-sm">
         <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
@@ -167,31 +167,33 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
           <p className="text-slate-600">“{messagePreview}”</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            pill
+            size="sm"
             onClick={(event) => {
               event.stopPropagation();
               onProposeSwap?.(traveler);
               onSelect?.(traveler);
             }}
-            className="flex items-center justify-center gap-2 rounded-full border border-slate-900 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
+            className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors"
           >
             Propose Swap <ArrowRight className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant={traveler.conversationId ? "emerald" : "secondary"}
+            pill
+            size="sm"
             onClick={(event) => {
               event.stopPropagation();
               onMessage?.(traveler);
             }}
             disabled={!traveler.conversationId}
-            className={`flex items-center justify-center gap-2 rounded-full px-4 py-2 font-semibold transition ${
-              traveler.conversationId ? "bg-emerald-500 text-white hover:bg-emerald-600" : "bg-slate-200 text-slate-500 cursor-not-allowed"
-            }`}
+            className="w-full text-xs font-semibold"
           >
             <MessageCircle className="h-4 w-4" />
             Message Traveler
-          </button>
+          </Button>
         </div>
       </footer>
     </article>

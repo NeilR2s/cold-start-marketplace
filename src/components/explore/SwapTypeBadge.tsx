@@ -1,17 +1,28 @@
 import { BarterType } from "../../types/explore";
+import { Badge } from "@/components/ui";
 
-const badgeStyles: Record<BarterType, string> = {
-  "1:1 Swap": "bg-emerald-100 text-emerald-700",
-  "1-to-Many Swap": "bg-sky-100 text-sky-700",
-  "Group Swap": "bg-purple-100 text-purple-700",
+const barterTypeVariantMap: Record<BarterType, "success" | "groupOrder" | "pasabuy"> = {
+  "1:1 Swap": "success",
+  "1-to-Many Swap": "groupOrder",
+  "Group Swap": "pasabuy",
 };
 
 type SwapTypeBadgeProps = {
   type: BarterType;
+  className?: string;
 };
 
-export function SwapTypeBadge({ type }: SwapTypeBadgeProps) {
-  return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeStyles[type]}`}>{type}</span>;
+export function SwapTypeBadge({ type, className }: SwapTypeBadgeProps) {
+  return (
+    <Badge
+      variant={barterTypeVariantMap[type] || "neutral"}
+      pill
+      className={className}
+    >
+      {type}
+    </Badge>
+  );
 }
+
 
 
