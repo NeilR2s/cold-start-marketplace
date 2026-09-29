@@ -10,22 +10,55 @@ import {
   CheckCheck,
   Image as ImageIcon,
 } from "lucide-react";
-import { Card, Avatar } from "@/components/CustomComponents";
+import { Card, Avatar } from "@/components/ui";
 
-const CHANNEL_LABELS = {
+export interface ChatMessage {
+  id: number;
+  sender: "me" | "them";
+  text: string;
+  time: string;
+}
+
+export interface ChatPartner {
+  name: string;
+  verified: boolean;
+  status: "online" | "offline";
+}
+
+export interface ChatContext {
+  label: string;
+  status: string;
+  route?: string;
+  productTag?: string;
+  productName?: string;
+}
+
+export interface Conversation {
+  id: string;
+  channel: "pasabuy" | "traveler" | "host";
+  partner: ChatPartner;
+  lastMessage: string;
+  timestamp: string;
+  unread: number;
+  type: string;
+  context: ChatContext;
+  messages: ChatMessage[];
+}
+
+const CHANNEL_LABELS: Record<Conversation["channel"], string> = {
   pasabuy: "Pasabuy",
   traveler: "Traveler Swap",
   host: "Swap Host",
 };
 
-const CHANNEL_STYLES = {
+const CHANNEL_STYLES: Record<Conversation["channel"], string> = {
   pasabuy: "bg-purple-50 border-purple-100 text-purple-700",
   traveler: "bg-emerald-50 border-emerald-100 text-emerald-700",
   host: "bg-blue-50 border-blue-100 text-blue-700",
 };
 
 // Mock Data for Conversations
-const MOCK_CONVERSATIONS = [
+const MOCK_CONVERSATIONS: Conversation[] = [
   {
     id: "c1",
     channel: "pasabuy",
@@ -33,7 +66,7 @@ const MOCK_CONVERSATIONS = [
     lastMessage: "I'm at Don Quijote now, sending pics of the matcha kit kats!",
     timestamp: "2m ago",
     unread: 2,
-    type: "buying", // User is the customer
+    type: "buying",
     context: { label: "Japan Pasabuy", status: "In Progress" },
     messages: [
       {
@@ -279,18 +312,24 @@ const TAB_OPTIONS = [
   { id: "traveler", label: "Traveler" },
   { id: "pasabuy", label: "Pasabuy" },
   { id: "host", label: "Swap Hosts" },
-];
+] as const;
 
-const MessagesPage = () => {
-  const [activeChatId, setActiveChatId] = useState(null);
-  const [activeTab, setActiveTab] = useState("all");
+export const MessagesPage: React.FC = () => {
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const location = useLocation();
-  const routeState = location.state ?? null;
+  const routeState = location.state as {
+    conversationId?: string;
+    chatType?: string;
+    linkedTag?: string;
+    productTag?: string;
+  } | null;
   const highlightedProductTag = routeState?.productTag ?? routeState?.linkedTag ?? null;
 
   useEffect(() => {
     const { conversationId, chatType, linkedTag } = routeState ?? {};
-    let timeoutId;
+    let timeoutId: number | undefined;
 
     if (conversationId) {
       const linkedConversation = MOCK_CONVERSATIONS.find((chat) => chat.id === conversationId);
@@ -300,7 +339,9 @@ const MessagesPage = () => {
           setActiveTab(chatType ?? linkedConversation.channel ?? "all");
         }, 0);
       }
-      return () => window.clearTimeout(timeoutId);
+      return () => {
+        if (timeoutId) window.clearTimeout(timeoutId);
+      };
     }
 
     if (linkedTag) {
@@ -311,7 +352,9 @@ const MessagesPage = () => {
           setActiveTab(chatType ?? linkedByTag.channel ?? "all");
         }, 0);
       }
-      return () => window.clearTimeout(timeoutId);
+      return () => {
+        if (timeoutId) window.clearTimeout(timeoutId);
+      };
     }
 
     if (chatType && chatType !== "all") {
@@ -331,18 +374,26 @@ const MessagesPage = () => {
 
   // Filter conversations
   const filteredConversations = MOCK_CONVERSATIONS.filter((chat) => {
-    if (activeTab === "all") return true;
-    return chat.channel === activeTab;
+    const matchesTab = activeTab === "all" || chat.channel === activeTab;
+    const matchesSearch =
+      searchQuery.trim().length === 0 ||
+      chat.partner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      chat.context.label.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
   });
 
   // Render the Main List
-  if (!activeChatId) {
+  if (!activeChatId || !activeChat) {
     return (
-      <div className="pb-24 space-y-6 animate-in fade-in px-4 py-6">
+      <div className="pb-24 space-y-6 animate-in fade-in py-6">
         {/* Page Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-slate-900">Messages</h1>
-          <div className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg text-xs font-bold">
+        <div className="flex justify-between items-center px-1">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Messages</h1>
+            <p className="text-xs text-slate-500">Coordinate trades and pasabuy requests</p>
+          </div>
+          <div className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold">
             {MOCK_CONVERSATIONS.filter((c) => c.unread > 0).length} New
           </div>
         </div>
@@ -351,22 +402,25 @@ const MessagesPage = () => {
         <div className="space-y-4">
           <div className="relative">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
               size={18}
             />
             <input
               type="text"
-              placeholder="Search orders or people..."
-              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search conversations, orders, travelers..."
+              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 shadow-sm transition-all"
             />
           </div>
 
-          <div className="flex p-1 bg-slate-200/50 rounded-xl">
+          <div className="flex p-1 bg-slate-200/60 rounded-xl overflow-x-auto no-scrollbar">
             {TAB_OPTIONS.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap text-center ${
                   activeTab === tab.id
                     ? "bg-white text-emerald-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
@@ -380,74 +434,80 @@ const MessagesPage = () => {
 
         {/* Conversation List */}
         <div className="space-y-3">
-          {filteredConversations.map((chat) => (
-            <Card
-              key={chat.id}
-              onClick={() => setActiveChatId(chat.id)}
-              className="p-4 flex gap-4 items-start active:scale-[0.99] cursor-pointer"
-            >
-              <div className="relative">
-                <Avatar
-                  name={chat.partner.name}
-                  verified={chat.partner.verified}
-                  size="md"
-                />
-                {chat.partner.status === "online" && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start mb-0.5">
-                  <h3 className="font-bold text-slate-800 text-sm truncate">
-                    {chat.partner.name}
-                  </h3>
-                  <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap ml-2">
-                    {chat.timestamp}
-                  </span>
-                </div>
-
-                {/* Context Badge */}
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                    {chat.context.label}
-                  </span>
-                  {chat.channel && (
-                    <span className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CHANNEL_STYLES[chat.channel]}`}>
-                      {CHANNEL_LABELS[chat.channel]}
-                    </span>
-                  )}
-                  {chat.context.productName && (
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-[10px] font-semibold text-emerald-700 truncate max-w-[120px]">
-                      #{chat.context.productName}
-                    </span>
-                  )}
-                  {highlightedProductTag === chat.context.productTag && (
-                    <span className="text-[10px] text-emerald-600 font-semibold">
-                      From listing
-                    </span>
+          {filteredConversations.length === 0 ? (
+            <div className="py-12 text-center text-slate-400">
+              <p className="text-sm font-medium">No messages found.</p>
+            </div>
+          ) : (
+            filteredConversations.map((chat) => (
+              <Card
+                key={chat.id}
+                onClick={() => setActiveChatId(chat.id)}
+                className="p-4 flex gap-4 items-start active:scale-[0.99] cursor-pointer hover:border-emerald-200 transition-all"
+              >
+                <div className="relative shrink-0">
+                  <Avatar
+                    name={chat.partner.name}
+                    verified={chat.partner.verified}
+                    size="md"
+                  />
+                  {chat.partner.status === "online" && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
                   )}
                 </div>
 
-                <div className="flex justify-between items-center gap-2">
-                  <p
-                    className={`text-xs truncate ${
-                      chat.unread > 0
-                        ? "text-slate-800 font-semibold"
-                        : "text-slate-500"
-                    }`}
-                  >
-                    {chat.lastMessage}
-                  </p>
-                  {chat.unread > 0 && (
-                    <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-emerald-500 text-white text-[10px] font-bold rounded-full px-1">
-                      {chat.unread}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-0.5">
+                    <h3 className="font-bold text-slate-800 text-sm truncate">
+                      {chat.partner.name}
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap ml-2">
+                      {chat.timestamp}
                     </span>
-                  )}
+                  </div>
+
+                  {/* Context Badge */}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                    <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                      {chat.context.label}
+                    </span>
+                    {chat.channel && (
+                      <span className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CHANNEL_STYLES[chat.channel]}`}>
+                        {CHANNEL_LABELS[chat.channel]}
+                      </span>
+                    )}
+                    {chat.context.productName && (
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-[10px] font-semibold text-emerald-700 truncate max-w-[140px]">
+                        #{chat.context.productName}
+                      </span>
+                    )}
+                    {highlightedProductTag === chat.context.productTag && (
+                      <span className="text-[10px] text-emerald-600 font-semibold">
+                        From listing
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center gap-2">
+                    <p
+                      className={`text-xs truncate ${
+                        chat.unread > 0
+                          ? "text-slate-800 font-semibold"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {chat.lastMessage}
+                    </p>
+                    {chat.unread > 0 && (
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-emerald-500 text-white text-[10px] font-bold rounded-full px-1 shrink-0">
+                        {chat.unread}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
       </div>
     );
@@ -457,11 +517,13 @@ const MessagesPage = () => {
   return (
     <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col animate-in slide-in-from-right-10 duration-200">
       {/* Chat Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between safe-area-top pt-safe">
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setActiveChatId(null)}
-            className="p-2 -ml-2 hover:bg-slate-50 rounded-full text-slate-500"
+            className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-500 cursor-pointer transition-colors"
+            aria-label="Back to messages"
           >
             <ArrowLeft size={20} />
           </button>
@@ -472,34 +534,33 @@ const MessagesPage = () => {
               size="sm"
             />
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">
+              <h3 className="font-bold text-slate-900 text-sm leading-tight">
                 {activeChat.partner.name}
               </h3>
               <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
                 {activeChat.context.label} • {activeChat.context.status}
               </div>
               {activeChat.channel && (
-                <div className={`mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${CHANNEL_STYLES[activeChat.channel]}`}>
+                <div className={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold ${CHANNEL_STYLES[activeChat.channel]}`}>
                   {CHANNEL_LABELS[activeChat.channel]}
                 </div>
               )}
-            {activeChat.context.productName && (
-              <div className="text-[10px] text-slate-500 font-semibold">
-                #{activeChat.context.productName}
-              </div>
-            )}
             </div>
           </div>
         </div>
-        <button className="text-slate-400 hover:text-slate-600">
+        <button 
+          type="button"
+          className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-50 transition-colors"
+          aria-label="Chat options"
+        >
           <MoreVertical size={20} />
         </button>
       </div>
 
       {/* Safety Reminder */}
       <div className="bg-slate-100 border-b border-slate-200 p-2 text-center">
-        <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1">
-          <ShieldCheck size={12} className="text-emerald-500" />
+        <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1 font-medium">
+          <ShieldCheck size={12} className="text-emerald-500 shrink-0" />
           <span>Keep barter details inside Bitbit chat and report suspicious offers.</span>
         </p>
       </div>
@@ -529,7 +590,7 @@ const MessagesPage = () => {
                 }
               `}
             >
-              <p>{msg.text}</p>
+              <p className="leading-relaxed">{msg.text}</p>
               <div
                 className={`text-[10px] mt-1 flex items-center justify-end gap-1 ${
                   msg.sender === "me" ? "text-emerald-100" : "text-slate-400"
@@ -547,22 +608,34 @@ const MessagesPage = () => {
 
       {/* Input Area */}
       <div className="bg-white border-t border-slate-200 p-3 pb-6 safe-area-bottom">
-        <div className="flex items-end gap-2 max-w-md mx-auto">
-          <button className="p-3 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+        <div className="flex items-center gap-2 max-w-xl mx-auto">
+          <button 
+            type="button"
+            className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+            aria-label="Attach file"
+          >
             <Paperclip size={20} />
           </button>
-          <div className="flex-1 bg-slate-100 rounded-2xl flex items-center gap-2 px-4 py-2 border border-transparent focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+          <div className="flex-1 bg-slate-100 rounded-2xl flex items-center gap-2 px-4 py-2 border border-transparent focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
             <input
               type="text"
               placeholder="Type a message..."
-              className="bg-transparent w-full text-sm text-slate-900 focus:outline-none max-h-24 py-1"
+              className="bg-transparent w-full text-sm text-slate-900 focus:outline-none py-1 placeholder:text-slate-400"
             />
-            <button className="text-slate-400 hover:text-emerald-600">
+            <button 
+              type="button"
+              className="text-slate-400 hover:text-emerald-600 p-1 cursor-pointer transition-colors"
+              aria-label="Attach image"
+            >
               <ImageIcon size={20} />
             </button>
           </div>
-          <button className="p-3 bg-emerald-600 text-white rounded-full shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors active:scale-95">
-            <Send size={20} className="ml-0.5" />
+          <button 
+            type="button"
+            className="p-3 bg-emerald-600 text-white rounded-full shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition-colors active:scale-95 cursor-pointer"
+            aria-label="Send message"
+          >
+            <Send size={18} className="ml-0.5" />
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
-import { ArrowRight, BadgeCheck, MessageCircle, Plane, MapPin, ShieldCheck, Scale, Package } from "lucide-react";
+import { ArrowRight, MessageCircle, Plane, MapPin, Scale, Package } from "lucide-react";
 import { TravelerProfile } from "../../types/travelers";
+import { Avatar, Button } from "@/components/ui";
 
 type TravelerCardProps = {
   traveler: TravelerProfile;
@@ -23,12 +24,9 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <img src={traveler.avatar} alt={traveler.name} className="h-12 w-12 rounded-full border border-slate-100 object-cover" />
+            <Avatar src={traveler.avatar} name={traveler.name} verified={traveler.verified} size="md" />
             <div>
-              <div className="flex items-center gap-1">
-                <p className="text-sm font-semibold text-slate-900">{traveler.name}</p>
-                {traveler.verified && <BadgeCheck className="h-4 w-4 text-emerald-500" />}
-              </div>
+              <p className="text-sm font-semibold text-slate-900">{traveler.name}</p>
               <p className="text-xs text-slate-500">{traveler.trip.timelineLabel}</p>
             </div>
           </div>
@@ -61,16 +59,14 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex flex-1 items-center gap-3">
-          <img
+          <Avatar
             src={traveler.avatar}
-            alt={traveler.name}
-            className="h-14 w-14 rounded-full border-2 border-emerald-100 object-cover"
+            name={traveler.name}
+            verified={traveler.verified}
+            size="lg"
           />
           <div className="flex-1">
-            <div className="flex items-center gap-1">
-              <h3 className="text-lg font-bold text-slate-900">{traveler.name}</h3>
-              {traveler.verified && <ShieldCheck className="h-4 w-4 text-emerald-500" />}
-            </div>
+            <h3 className="text-lg font-bold text-slate-900">{traveler.name}</h3>
             <p className="text-sm text-slate-500">{traveler.currentArea}</p>
             <p className="text-xs text-slate-400">
               Rating {traveler.rating.toFixed(1)} · {traveler.completedSwaps} swaps done
@@ -167,31 +163,33 @@ export function TravelerCard({ traveler, variant = "full", onSelect, onMessage, 
           <p className="text-slate-600">“{messagePreview}”</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            pill
+            size="sm"
             onClick={(event) => {
               event.stopPropagation();
               onProposeSwap?.(traveler);
               onSelect?.(traveler);
             }}
-            className="flex items-center justify-center gap-2 rounded-full border border-slate-900 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
+            className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors"
           >
             Propose Swap <ArrowRight className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant={traveler.conversationId ? "emerald" : "secondary"}
+            pill
+            size="sm"
             onClick={(event) => {
               event.stopPropagation();
               onMessage?.(traveler);
             }}
             disabled={!traveler.conversationId}
-            className={`flex items-center justify-center gap-2 rounded-full px-4 py-2 font-semibold transition ${
-              traveler.conversationId ? "bg-emerald-500 text-white hover:bg-emerald-600" : "bg-slate-200 text-slate-500 cursor-not-allowed"
-            }`}
+            className="w-full text-xs font-semibold"
           >
             <MessageCircle className="h-4 w-4" />
             Message Traveler
-          </button>
+          </Button>
         </div>
       </footer>
     </article>

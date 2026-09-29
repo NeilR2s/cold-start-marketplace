@@ -2,6 +2,7 @@ import { MessageCircle, Users, Sparkles, ArrowRight } from "lucide-react";
 import { SwapListing } from "../../types/explore";
 import { SwapTypeBadge } from "./SwapTypeBadge";
 import { LocationBadge } from "./LocationBadge";
+import { Button } from "@/components/ui";
 
 type SwapCardProps = {
   listing: SwapListing;
@@ -93,19 +94,23 @@ export function SwapCard({ listing, layout = "grid", onChatHost }: SwapCardProps
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          <button
-            type="button"
-            className="rounded-full border border-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
+          <Button
+            variant="outline"
+            pill
+            size="sm"
+            className="w-full text-xs font-semibold hover:bg-slate-900 hover:text-white transition-colors"
           >
             View Listing
-          </button>
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+          </Button>
+          <Button
+            variant="emerald"
+            pill
+            size="sm"
+            className="w-full text-xs font-semibold"
             onClick={() => onChatHost?.(listing)}
           >
             Chat Host <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </article>
